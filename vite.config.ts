@@ -4,6 +4,8 @@ import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import pkg from './package.json'
+import { fileURLToPath, URL } from 'node:url'
+import copy from 'rollup-plugin-copy'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
@@ -38,6 +40,11 @@ export default defineConfig(({ command }) => {
                 // Others need to put them in `dependencies` to ensure they are collected into `app.asar` after the app is built.
                 // Of course, this is not absolute, just this way is relatively simple. :)
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                plugins: [
+                  copy({
+                    targets: [{ src: 'resources/ffmpeg/**/*', dest: 'dist-electron/ffmpeg' }]
+                  })
+                ]
               },
             },
           },
@@ -72,5 +79,10 @@ export default defineConfig(({ command }) => {
       }
     })(),
     clearScreen: false,
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      }
+    },
   }
 })
