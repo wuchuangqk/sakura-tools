@@ -6,17 +6,8 @@ declare module '*.vue' {
   export default component
 }
 interface IFfmpeg {
-  runFfmpeg: (args: any[]) => Promise<Buffer>,
+  run: (cmd: string, args: any[]) => Promise<Buffer | string>,
 }
-export interface IIPC {
-  ffmpeg: IFfmpeg
-}
-declare global {
-  interface Window {
-    IPC: IIPC
-  }
-}
-
 interface IVideo {
   milliseconds: string
   seconds: number
@@ -24,4 +15,9 @@ interface IVideo {
   hours: number
   currentTime: number
   duration: number
+}
+
+interface ISegments {
+  start: number
+  end: number
 }

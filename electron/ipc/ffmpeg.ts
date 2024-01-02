@@ -6,9 +6,6 @@ import { isDev, debug } from '../util'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-debug(JSON.stringify({ __filename, __dirname }))
-debug(process.resourcesPath)
-
 const getPath = (cmd: string) => {
   if (isDev()) {
     return join(__dirname, `../../resources/ffmpeg/${cmd}.exe`)
@@ -17,14 +14,18 @@ const getPath = (cmd: string) => {
   }
 }
 
-const run = (args: any[]) => {
+const run = (cmd: string, args: any[]) => {
   const arg = args.reduce((prev, cur) => {
     return prev + (cur.length === 2 ? `${cur[0]} ${cur[1]} ` : `${cur[0]} `)
   }, '')
+  debug(arg)
   return new Promise((resolve, reject) => {
-    const ffmpegPath = getPath('ffmpeg')
-    debug(ffmpegPath)
-    exec(`${ffmpegPath} ${arg}`, { encoding: "buffer" }, (err, sdtout, stderr) => {
+    const ffmpegPath = getPath(cmd)
+    let options = {}
+    if (cmd === 'ffmpeg') {
+      options = { encoding: "buffer" }
+    }
+    exec(`${ffmpegPath} ${arg}`, options, (err, sdtout, stderr) => {
       if (err) return reject(err)
       resolve(sdtout)
     })

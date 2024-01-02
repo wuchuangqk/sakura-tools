@@ -2,14 +2,16 @@ import { padStart } from 'lodash'
 
 /**
  * 格式化视频时长
- * @param durationObj 时长
+ * @param value 
  * @returns 
  */
-export const fmtDuration = (durationObj: { milliseconds: string, seconds: number, minutes: number, hours: number }) => {
-  const hours = padStart(String(durationObj.hours), 2, '0')
-  const minutes = padStart(String(durationObj.minutes), 2, '0')
-  const seconds = padStart(String(durationObj.seconds), 2, '0')
-  return `${hours}:${minutes}:${seconds}${durationObj.milliseconds.substring(1)}`
+export const fmtDuration = (value: { milliseconds: string, seconds: number, minutes: number, hours: number } | number): string => {
+  if (isEmpty(value)) return ''
+  if (typeof value === 'number') return fmtDuration(fmtSeconds(value))
+  const hours = padStart(String(value.hours), 2, '0')
+  const minutes = padStart(String(value.minutes), 2, '0')
+  const seconds = padStart(String(value.seconds), 2, '0')
+  return `${hours}:${minutes}:${seconds}${value.milliseconds.substring(1)}`
 }
 
 /**
@@ -26,7 +28,7 @@ export const fmtSeconds = (duration: number) => {
   return { milliseconds, seconds, minutes, hours }
 }
 
-export const isEmpty = (value: string | number | object) => {
+export const isEmpty = (value: any) => {
   if (typeof value === 'undefined' || value === null) {
     return true
   }

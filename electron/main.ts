@@ -50,6 +50,7 @@ async function createWindow() {
     icon: join(process.env.VITE_PUBLIC, 'app.ico'),
     webPreferences: {
       preload,
+      webSecurity: !isDev(), // fix: Not allowed to load local resource
     },
   })
 

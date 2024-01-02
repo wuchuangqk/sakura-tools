@@ -14,7 +14,7 @@
     "dist/electron"
   ],
   "win": {
-    "target": "portable",
+    "target": "zip",
     "icon": "./resources/app.ico",
     "extraResources": [
       {
