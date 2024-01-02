@@ -8,6 +8,7 @@
   </div>
   <TimeLine :thumbnails="thumbnailsSorted" />
   <div v-if="isFileOpened">
+    {{ videoMeta }}
     <span>时长：{{ fmtDuration(videoMeta) }}</span>
     <span>当前：{{ currentTime }}</span>
   </div>

@@ -6,7 +6,7 @@ declare module '*.vue' {
   export default component
 }
 interface IFfmpeg {
-  run: (cmd: string, args: any[]) => Promise<Buffer | string>,
+  run: (args: any[], cmd?: string, options?: any) => Promise<Buffer | string>,
 }
 interface IVideo {
   milliseconds: string

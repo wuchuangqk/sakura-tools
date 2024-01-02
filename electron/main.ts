@@ -18,7 +18,7 @@ const __dirname = dirname(__filename)
 //
 process.env.DIST_ELECTRON = __dirname
 process.env.DIST_RENDER = join(process.env.DIST_ELECTRON, '../render')
-process.env.VITE_PUBLIC = isDev()
+process.env.VITE_PUBLIC = isDev
   ? join(process.env.DIST_ELECTRON, '../public')
   : process.env.DIST_RENDER
 
@@ -50,11 +50,11 @@ async function createWindow() {
     icon: join(process.env.VITE_PUBLIC, 'app.ico'),
     webPreferences: {
       preload,
-      webSecurity: !isDev(), // fix: Not allowed to load local resource
+      webSecurity: !isDev, // fix: Not allowed to load local resource
     },
   })
 
-  if (isDev()) { // electron-vite-vue#298
+  if (isDev) { // electron-vite-vue#298
     win.loadURL(url)
     // Open devTool if the app is not packaged
     win.webContents.openDevTools()
@@ -112,7 +112,7 @@ ipcMain.handle('open-win', (_, arg) => {
     },
   })
 
-  if (isDev()) {
+  if (isDev) {
     childWindow.loadURL(`${url}#${arg}`)
   } else {
     childWindow.loadFile(indexHtml, { hash: arg })

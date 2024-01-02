@@ -7,25 +7,18 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const getPath = (cmd: string) => {
-  if (isDev()) {
+  if (isDev) {
     return join(__dirname, `../../resources/ffmpeg/${cmd}.exe`)
   } else {
     return join(process.resourcesPath, `/ffmpeg/${cmd}.exe`)
   }
 }
 
-const run = (cmd: string, args: any[]) => {
-  const arg = args.reduce((prev, cur) => {
-    return prev + (cur.length === 2 ? `${cur[0]} ${cur[1]} ` : `${cur[0]} `)
-  }, '')
-  debug(arg)
+const run = (args: any[], cmd: string = 'ffmpeg', options = null) => {
+  debug(args.join(' '))
   return new Promise((resolve, reject) => {
-    const ffmpegPath = getPath(cmd)
-    let options = {}
-    if (cmd === 'ffmpeg') {
-      options = { encoding: "buffer" }
-    }
-    exec(`${ffmpegPath} ${arg}`, options, (err, sdtout, stderr) => {
+    const cmdPath = getPath(cmd)
+    exec(`${cmdPath} ${args.join(' ')}`, options, (err, sdtout, stderr) => {
       if (err) return reject(err)
       resolve(sdtout)
     })

@@ -3,6 +3,6 @@ const { contextBridge, ipcRenderer } = require('electron')
 // 等价于 window.electronAPI = {}
 contextBridge.exposeInMainWorld('IPC', {
   ffmpeg: {
-    run: (cmd: string, args: any[]) => ipcRenderer.invoke('ffmpeg:run', cmd, args),
+    run: (args: any[], cmd: string, options: any) => ipcRenderer.invoke('ffmpeg:run', args, cmd, options),
   }
 })
