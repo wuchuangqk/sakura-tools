@@ -1,7 +1,7 @@
 import pMap from 'p-map';
 
 const { ffmpeg } = window.IPC
-const THUMBNAIL_MAX = 25 // 缩略图上限
+const THUMBNAIL_MAX = 2 // 缩略图上限
 
 /**
  * 渲染单张缩略图

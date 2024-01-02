@@ -5,11 +5,10 @@ import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import pkg from './package.json'
 import { fileURLToPath, URL } from 'node:url'
-import copy from 'rollup-plugin-copy'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
-  rmSync('dist-electron', { recursive: true, force: true })
+  rmSync('dist', { recursive: true, force: true })
 
   const isServe = command === 'serve'
   const isBuild = command === 'build'
@@ -21,7 +20,7 @@ export default defineConfig(({ command }) => {
       electron([
         {
           // Main process entry file of the Electron App.
-          entry: 'electron/main/index.ts',
+          entry: 'electron/main.ts',
           onstart({ startup }) {
             if (process.env.VSCODE_DEBUG) {
               console.log(/* For `.vscode/.debug.script.mjs` */'[startup] Electron App')
@@ -33,24 +32,19 @@ export default defineConfig(({ command }) => {
             build: {
               sourcemap,
               minify: isBuild,
-              outDir: 'dist-electron/main',
+              outDir: 'dist/electron',
               rollupOptions: {
                 // Some third-party Node.js libraries may not be built correctly by Vite, especially `C/C++` addons, 
                 // we can use `external` to exclude them to ensure they work correctly.
                 // Others need to put them in `dependencies` to ensure they are collected into `app.asar` after the app is built.
                 // Of course, this is not absolute, just this way is relatively simple. :)
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
-                plugins: [
-                  copy({
-                    targets: [{ src: 'resources/ffmpeg/**/*', dest: 'dist-electron/ffmpeg' }]
-                  })
-                ]
               },
             },
           },
         },
         {
-          entry: 'electron/preload/index.ts',
+          entry: 'electron/preload.ts',
           onstart({ reload }) {
             // Notify the Renderer process to reload the page when the Preload scripts build is complete, 
             // instead of restarting the entire Electron App.
@@ -60,7 +54,7 @@ export default defineConfig(({ command }) => {
             build: {
               sourcemap: sourcemap ? 'inline' : undefined, // #332
               minify: isBuild,
-              outDir: 'dist-electron/preload',
+              outDir: 'dist/electron',
               rollupOptions: {
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
               },
@@ -84,5 +78,8 @@ export default defineConfig(({ command }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
     },
+    build: {
+      outDir: 'dist/render'
+    }
   }
 })
