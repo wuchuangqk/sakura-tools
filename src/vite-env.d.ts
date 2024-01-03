@@ -17,4 +17,6 @@ interface IVideoMeta {
 interface ISegments {
   start: number
   end: number
+  left: string
+  width: string
 }

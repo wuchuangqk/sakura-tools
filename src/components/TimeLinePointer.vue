@@ -1,6 +1,6 @@
 <template>
-  <svg class=" absolute top-0 bottom-0 h-full" :style="{left, width: '4px'}">
-    <line x1="0" y1="0" x2="0" y2="50" style="stroke:red;stroke-width:4" />
+  <svg class=" absolute top-0 bottom-0 h-full move"  :style="{ left, width: '1px' }">
+    <line x1="0" y1="0" x2="0" y2="130" style="stroke:red;stroke-width:1" />
   </svg>
 </template>
 <script setup lang="ts">
@@ -13,4 +13,8 @@ withDefaults(defineProps<{
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.move {
+  transition: left 0.05s linear;
+}
+</style>

@@ -2,7 +2,7 @@ import pMap from 'p-map';
 import Decimal from 'decimal.js'
 
 const { ffmpeg } = window.IPC
-const THUMBNAIL_MAX = 10 // 缩略图上限
+const THUMBNAIL_MAX = 12 // 缩略图上限
 
 /**
  * 渲染单张缩略图

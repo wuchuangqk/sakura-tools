@@ -2,11 +2,12 @@
 
 <template>
   <FileLoader v-if="!isFileOpened" @load="onFileLoad" />
-  <div v-if="isFileOpened">
-    <video ref="videoRef" :src="filePath" style="width: 100%;height: 100%;object-fit: contain;"
-      @loadedmetadata="onLoadedmetadata" @timeupdate="timeupdate"></video>
+  <div v-if="isFileOpened" class="flex-1 overflow-hidden">
+    <video ref="videoRef" :src="filePath"
+      style="width: 100%;height: 100%;object-fit: contain;" @loadedmetadata="onLoadedmetadata"
+      @timeupdate="timeupdate"></video>
   </div>
-  <TimeLine v-if="isLoadVideoMeta" :thumbnails="thumbnailsSorted" />
+  <TimeLine v-if="isLoadVideoMeta" :thumbnails="thumbnailsSorted" :segment-list="segmentList" />
   <div v-if="isLoadVideoMeta" class="flex gap-10">
     <span>时长：{{ videoMeta.durationFmt }}</span>
     <span>当前：{{ currentTime }}</span>
@@ -24,11 +25,11 @@
     <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="setCutEnd">设置结束时间</button>
     <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="exportVideo">导出</button>
   </div>
-  <div v-for="(segment, index) in segmentList" :key="index" class="flex gap-10">
+  <!-- <div v-for="(segment, index) in segmentList" :key="index" class="flex gap-10">
     <span>剪切开始时间：{{ segment.start }}</span>
     <span>剪切结束时间：{{ segment.end }}</span>
     <span>时长：{{ fmtDuration(segment.end - segment.start) }}</span>
-  </div>
+  </div> -->
 </template>
 <script setup lang="ts">
 import { computed, reactive, ref, provide } from 'vue'
@@ -45,7 +46,7 @@ const videoMeta = reactive<IVideoMeta>({
   durationFmt: '00:00:00.000',
 })
 const filePath = ref()
-const thumbnails = reactive<Array<{ time: number, url: string }>>([])
+const thumbnails = reactive<Array<{ time: number, url: string, timeFmt: string }>>([])
 const isFileOpened = ref(false)
 const isLoadVideoMeta = ref(false)
 const keyFrames = ref<number[]>([])
@@ -85,7 +86,7 @@ const showThumbnail = () => {
     from: 0,
     duration: videoMeta.duration,
     onThumbnail: (payload: { time: number, url: string }) => {
-      thumbnails.push(payload)
+      thumbnails.push({ ...payload, timeFmt: fmtDuration(payload.time) })
     }
   }).catch(err => {
     console.error('Failed to render thumbnail', err);
@@ -132,11 +133,51 @@ const onFileLoad = (files: FileList) => {
 }
 
 const setCutStart = () => {
-  segmentList.push({ start: videoMeta.currentTime, end: videoMeta.duration })
+  const segment = {
+    start: videoMeta.currentTime,
+    end: videoMeta.duration,
+    left: '0',
+    width: '0'
+  }
+  const left = segment.start / videoMeta.duration * 100 + '%'
+  segment.left = left
+
+  const existSegment = segmentList.find((seg) => {
+    console.log(segment.start, seg.start, seg.end);
+
+    return segment.start < seg.start // 不在区间
+      || (seg.start <= segment.start && segment.start <= seg.end) // 在区间
+  })
+  console.log(existSegment);
+
+  if (typeof existSegment === 'undefined') {
+    // 添加新的片段
+    const width = (segment.end - segment.start) / videoMeta.duration * 100 + '%'
+    segment.width = width
+    segmentList.push(segment)
+  } else {
+    // 重设现有片段的起点
+    const width = (existSegment.end - segment.start) / videoMeta.duration * 100 + '%'
+    segment.width = width
+    Object.assign(existSegment, segment)
+  }
+  console.log(segmentList);
 }
 const setCutEnd = () => {
   if (!segmentList.length) return
-  segmentList[segmentList.length - 1].end = videoMeta.currentTime
+  const end = videoMeta.currentTime
+  const existSegment = segmentList.find((seg) => {
+    return end > seg.end // 不在区间
+      || (seg.start <= end && end <= seg.end) // 在区间
+  })
+  if (typeof existSegment === 'undefined') {
+    // 结束时间在开始时间之前，不合法
+    return alert('结束时间在开始时间之前，不合法')
+  }
+  existSegment.end = end
+  const width = (existSegment.end - existSegment.start) / videoMeta.duration * 100 + '%'
+  existSegment.width = width
+  console.log(segmentList);
 }
 const exportVideo = async () => {
   if (!segmentList.length) return
