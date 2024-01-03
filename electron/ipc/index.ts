@@ -3,7 +3,7 @@ import ffmpeg from './ffmpeg'
 
 // ipc events
 const initIpcClient = () => {
-  ipcMain.handle('ffmpeg:run', (e, args, cmd, options) => ffmpeg.run(args, cmd, options))
+  ipcMain.handle('ffmpeg:run', (e, ...args: [string[], string, any]) => ffmpeg.run(...args))
 }
 
 export default initIpcClient

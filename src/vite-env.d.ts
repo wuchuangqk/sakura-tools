@@ -8,13 +8,10 @@ declare module '*.vue' {
 interface IFfmpeg {
   run: (args: any[], cmd?: string, options?: any) => Promise<Buffer | string>,
 }
-interface IVideo {
-  milliseconds: string
-  seconds: number
-  minutes: number
-  hours: number
+interface IVideoMeta {
   currentTime: number
   duration: number
+  durationFmt: string
 }
 
 interface ISegments {

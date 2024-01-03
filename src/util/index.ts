@@ -41,6 +41,6 @@ export const isEmpty = (value: any) => {
   return false
 }
 
-export const isNotEmpty = (value: string | object) => {
+export const isNotEmpty = (value: any) => {
   return !isEmpty(value)
 }

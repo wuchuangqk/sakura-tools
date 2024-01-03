@@ -44,6 +44,7 @@
     "vue-tsc": "^1.8.27"
   },
   "dependencies": {
+    "decimal.js": "^10.4.3",
     "lodash": "^4.17.21",
     "p-map": "^7.0.1"
   }
