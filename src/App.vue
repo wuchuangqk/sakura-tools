@@ -15,29 +15,29 @@
   <div v-if="isLoadVideoMeta" class="flex gap-1">
     <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="play">播放</button>
     <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="pause">暂停</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="showThumbnail">缩略图</button>
     <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="prevKeyFrame">上一个关键帧</button>
     <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="nextKeyFrame">下一个关键帧</button>
     <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="setKeyFrames">关键帧</button>
-  </div>
-  <div v-if="isLoadVideoMeta" class="flex gap-1">
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="setCutStart">设置开始时间</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="setCutEnd">设置结束时间</button>
+    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="addSegment">添加片段</button>
+    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="setSegmentEnd">设置片段终点</button>
     <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="exportVideo">导出</button>
   </div>
-  <!-- <div v-for="(segment, index) in segmentList" :key="index" class="flex gap-10">
-    <span>剪切开始时间：{{ segment.start }}</span>
-    <span>剪切结束时间：{{ segment.end }}</span>
-    <span>时长：{{ fmtDuration(segment.end - segment.start) }}</span>
-  </div> -->
+  <div v-for="(segment, index) in segmentList" :key="index" class="flex gap-10">
+    <span>start{{ segment.start }}</span>
+    <span>end{{ segment.end }}</span>
+    <span>duration{{ fmtDuration(segment.end - segment.start) }}</span>
+    <span>left{{ segment.left }}</span>
+    <span>wdith{{ segment.width }}</span>
+  </div>
 </template>
 <script setup lang="ts">
 import { computed, reactive, ref, provide } from 'vue'
 import TimeLine from '@/components/TimeLine.vue'
 import FileLoader from './components/FileLoader.vue'
 import { fmtDuration, fmtSeconds } from '@/util'
-import { renderThumbnails, queryKeyFrames, cutVideo } from '@/util/ffmpeg'
+import { renderThumbnails, queryKeyFrames, cutAndMergeVideo } from '@/util/ffmpeg'
 import { sortBy } from 'lodash'
+import { Segment } from '@/util/Segment'
 
 const videoRef = ref<HTMLVideoElement>(null as unknown as HTMLVideoElement)
 const videoMeta = reactive<IVideoMeta>({
@@ -50,13 +50,16 @@ const thumbnails = reactive<Array<{ time: number, url: string, timeFmt: string }
 const isFileOpened = ref(false)
 const isLoadVideoMeta = ref(false)
 const keyFrames = ref<number[]>([])
-const segmentList = reactive<ISegments[]>([])
+const segmentList = reactive<Segment[]>([])
+const isPlaying = ref(false)
 
 const play = () => {
   videoRef.value.play()
+  isPlaying.value = true
 }
 const pause = () => {
   videoRef.value.pause()
+  isPlaying.value = false
 }
 const onLoadedmetadata = () => {
   const { duration } = videoRef.value
@@ -132,67 +135,48 @@ const onFileLoad = (files: FileList) => {
   isFileOpened.value = true
 }
 
-const setCutStart = () => {
-  const segment = {
-    start: videoMeta.currentTime,
-    end: videoMeta.duration,
-    left: '0',
-    width: '0'
-  }
-  const left = segment.start / videoMeta.duration * 100 + '%'
-  segment.left = left
-
-  const existSegment = segmentList.find((seg) => {
-    console.log(segment.start, seg.start, seg.end);
-
-    return segment.start < seg.start // 不在区间
-      || (seg.start <= segment.start && segment.start <= seg.end) // 在区间
-  })
-  console.log(existSegment);
-
-  if (typeof existSegment === 'undefined') {
-    // 添加新的片段
-    const width = (segment.end - segment.start) / videoMeta.duration * 100 + '%'
-    segment.width = width
-    segmentList.push(segment)
+const addSegment = () => {
+  const { currentTime } = videoMeta
+  const existSegment = segmentList.find((seg) => seg.start <= currentTime && currentTime <= seg.end)
+  // 如果当前时间点在某一个片段区间，则重设片段起点
+  if (typeof existSegment !== 'undefined') {
+    existSegment.setStart(currentTime)
   } else {
-    // 重设现有片段的起点
-    const width = (existSegment.end - segment.start) / videoMeta.duration * 100 + '%'
-    segment.width = width
-    Object.assign(existSegment, segment)
+    // 否则，以当前时间点为开始，新添加一个片段
+    let end = videoMeta.duration
+    // 相邻片段的起点作为结束点
+    const adjacent = segmentList.find(seg => currentTime < seg.start)
+    if (typeof adjacent !== 'undefined') {
+      end = adjacent.start
+    }
+    const newSegment = new Segment(videoMeta.duration, currentTime, end)
+    segmentList.push(newSegment)
+    segmentList.sort((a, b) => a.start - b.start)
+    console.log(segmentList);
+
   }
-  console.log(segmentList);
 }
-const setCutEnd = () => {
-  if (!segmentList.length) return
-  const end = videoMeta.currentTime
-  const existSegment = segmentList.find((seg) => {
-    return end > seg.end // 不在区间
-      || (seg.start <= end && end <= seg.end) // 在区间
-  })
-  if (typeof existSegment === 'undefined') {
-    // 结束时间在开始时间之前，不合法
-    return alert('结束时间在开始时间之前，不合法')
+const setSegmentEnd = () => {
+  // 只有在区间时才可以设置终点
+  const { currentTime } = videoMeta
+  const segment = segmentList.find(seg => seg.start < currentTime && currentTime < seg.end)
+  if (typeof segment !== 'undefined') {
+    segment.setEnd(currentTime)
+  } else {
+    alert('设置终点只能在片段区间进行')
   }
-  existSegment.end = end
-  const width = (existSegment.end - existSegment.start) / videoMeta.duration * 100 + '%'
-  existSegment.width = width
-  console.log(segmentList);
 }
+
 const exportVideo = async () => {
-  if (!segmentList.length) return
-  const { start, end } = segmentList[0]
-  await cutVideo({
-    filePath: filePath.value,
-    from: start,
-    duration: end - start
-  })
+  // if (!segmentList.length) return
+  await cutAndMergeVideo(filePath.value, segmentList)
   alert('导出完成')
 }
 
 provide('APP', {
   videoMeta,
   isFileOpened,
+  isPlaying,
   setCurrentTime,
 })
 </script>

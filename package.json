@@ -1,18 +1,12 @@
 {
-  "name": "electron-vue-vite",
-  "version": "1.2.0",
+  "name": "sakura-cut",
+  "version": "1.4.0",
   "main": "dist/electron/main.mjs",
-  "description": "Really simple Electron + Vue + Vite boilerplate.",
-  "author": "草鞋没号 <308487730@qq.com>",
+  "description": "video and audio editing software",
+  "author": "wuchuangqk",
   "license": "MIT",
   "private": true,
-  "keywords": [
-    "electron",
-    "rollup",
-    "vite",
-    "vue3",
-    "vue"
-  ],
+  "keywords": [],
   "debug": {
     "env": {
       "VITE_DEV_SERVER_URL": "http://127.0.0.1:3344/"
@@ -22,7 +16,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && electron-builder",
-    "preview": "vite preview",
     "electron-builder": "electron-builder"
   },
   "devDependencies": {

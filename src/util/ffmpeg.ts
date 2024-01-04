@@ -1,8 +1,9 @@
 import pMap from 'p-map';
 import Decimal from 'decimal.js'
+import { Segment } from './Segment';
 
-const { ffmpeg } = window.IPC
-const THUMBNAIL_MAX = 12 // 缩略图上限
+const { ffmpeg, os } = window.IPC
+const THUMBNAIL_MAX = 10 // 缩略图上限
 
 /**
  * 渲染单张缩略图
@@ -37,7 +38,7 @@ export const renderThumbnails = async ({ filePath, from, duration, onThumbnail }
   await pMap(thumbTimes, async (time) => {
     const url = await renderThumbnail(filePath, time)
     onThumbnail({ time, url })
-  }, { concurrency: 2 });
+  }, { concurrency: 4 });
 }
 
 export const queryKeyFrames = async ({ filePath, duration }: { filePath: string, duration: number }) => {
@@ -77,7 +78,7 @@ export const queryKeyFrames = async ({ filePath, duration }: { filePath: string,
  * 截取视频
  * @param param0 from:开始时间 duration:截取的长度（单位：秒）
  */
-export const cutVideo = async ({ filePath, from, duration }: { filePath: string, from: number, duration: number }) => {
+export const cutVideo1 = async ({ filePath, from, duration }: { filePath: string, from: number, duration: number }) => {
   const outPath = getOutPath(filePath)
   console.log('outPath', outPath);
   const args = [
@@ -104,5 +105,54 @@ export const cutVideo = async ({ filePath, from, duration }: { filePath: string,
 const getOutPath = (filePath: string) => {
   const path = filePath.substring(0, filePath.lastIndexOf('.'))
   const suffix = filePath.substring(filePath.lastIndexOf('.'))
-  return `"${path}-sakura${new Date().getTime()}${suffix}"`
+  const random = Math.floor(Math.random() * (10000 - 999 + 1) + 999);
+  return `"${path}-sakura${random}${suffix}"`
+}
+
+const cutVideo = async ({ filePath, outPath, from, duration }: { filePath: string, outPath: string, from: number, duration: number }) => {
+  const args = [
+    '-ss', from,
+    '-t', duration,
+    '-i', `"${filePath}"`,
+    '-vcodec', 'copy',
+    '-acodec', 'copy',
+    outPath,
+  ]
+  await ffmpeg.run(args)
+}
+
+const mergeVideo = async (outPath: string, fileListPath: string) => {
+  const args = [
+    '-hide_banner',
+    '-f', 'concat',
+    '-safe', '0',
+    '-i', `"${fileListPath}"`,
+    '-c', 'copy',
+    outPath,
+  ]
+  await ffmpeg.run(args)
+}
+
+export const cutAndMergeVideo = async (filePath: string, segmentList: Segment[]) => {
+  const { dir } = await os.getFileMeta(filePath)
+
+  // 分割并记录输出文件路径
+  const outPathList: string[] = []
+  const tasks = segmentList.map(seg => {
+    const outPath = getOutPath(filePath).replaceAll(`"`, '')
+    outPathList.push(outPath)
+    return cutVideo({ filePath, outPath, from: seg.start, duration: Decimal.sub(seg.end, seg.start).toNumber() })
+  })
+  await Promise.all(tasks)
+  await os.createTxt(outPathList.map(path => `file 'file:${path}'`), dir)
+
+  // 合并
+  const outPath = getOutPath(filePath)
+  const fileListPath = `${dir}\\fileList.txt`
+  await mergeVideo(outPath, fileListPath)
+
+  // 删除临时文件
+  os.removeFile([fileListPath, ...outPathList])
+
+  alert('ok')
 }

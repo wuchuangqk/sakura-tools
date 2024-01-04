@@ -8,6 +8,11 @@ declare module '*.vue' {
 interface IFfmpeg {
   run: (args: any[], cmd?: string, options?: any) => Promise<Buffer | string>,
 }
+interface IOS {
+  getFileMeta: (filePath: string) => Promise<{ name: string, dir: string }>,
+  createTxt: (outPathList: string[], dir: string) => Promise<void>,
+  removeFile: (pathList: string[]) => Promise<void>,
+}
 interface IVideoMeta {
   currentTime: number
   duration: number
