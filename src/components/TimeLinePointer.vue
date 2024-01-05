@@ -1,6 +1,9 @@
 <template>
-  <svg class=" absolute top-0 bottom-0 h-full move" :style="{ left, width: '2px' }">
-    <line x1="0" y1="0" x2="0" y2="130" style="stroke-width:2" :style="style" />
+  <svg v-if="type === 'command'" class=" absolute top-0 bottom-0 h-full move" :style="{ left, width: '2px' }">
+    <line x1="0" y1="0" x2="0" y2="130" style="stroke-width:2;stroke: blue;" />
+  </svg>
+  <svg v-if="type === 'preview'" class=" absolute top-0 bottom-0 h-full move" :style="{ left, width: '2px' }">
+    <line x1="0" y1="0" x2="0" y2="106" style="stroke-width:2;stroke: white;" />
   </svg>
 </template>
 <script setup lang="ts">
@@ -14,11 +17,6 @@ const props = withDefaults(defineProps<{
   type: 'command',
 })
 
-const style = computed(() => {
-  return {
-    stroke: props.type === 'command' ? 'red' : 'white'
-  }
-})
 </script>
 
 <style lang="scss" scoped>

@@ -1,6 +1,6 @@
 {
   "name": "sakura-cut",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "main": "dist/electron/main.mjs",
   "description": "video and audio editing software",
   "author": "wuchuangqk",
@@ -40,6 +40,7 @@
   "dependencies": {
     "decimal.js": "^10.4.3",
     "lodash": "^4.17.21",
+    "mousetrap": "^1.6.5",
     "p-map": "^7.0.1"
   }
 }

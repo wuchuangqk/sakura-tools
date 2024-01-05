@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, screen } from 'electron'
 import { release } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -45,14 +45,20 @@ const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST_RENDER, 'index.html')
 
 async function createWindow() {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize
+
   win = new BrowserWindow({
     title: 'Main window',
     icon: join(process.env.VITE_PUBLIC, 'app.ico'),
+    darkTheme: true,
+    width: Math.floor(width * 0.8), // 宽高必须是整数
+    height: Math.floor(height * 0.8),
     webPreferences: {
       preload,
       webSecurity: !isDev, // fix: Not allowed to load local resource
     },
   })
+  win.maximize() // 窗口最大化
 
   if (isDev) { // electron-vite-vue#298
     win.loadURL(url)

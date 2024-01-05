@@ -153,6 +153,4 @@ export const cutAndMergeVideo = async (filePath: string, segmentList: Segment[])
 
   // 删除临时文件
   os.removeFile([fileListPath, ...outPathList])
-
-  alert('ok')
 }

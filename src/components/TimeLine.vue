@@ -20,7 +20,7 @@
       </div>
     </div>
     <TimeLinePointer :left="playProgress" />
-    <TimeLinePointer :left="previewPointer" type="preview" />
+    <TimeLinePointer v-if="previewPointer !== playProgress" :left="previewPointer" type="preview" />
   </div>
 </template>
 <script setup lang="ts">
@@ -38,10 +38,11 @@ const props = withDefaults(defineProps<{
   segmentList: () => [],
 })
 
-const { videoMeta, setCurrentTime, isPlaying } = inject('APP') as {
+const { videoMeta, setCurrentTime, isPlaying, commandTime } = inject('APP') as {
   videoMeta: IVideoMeta,
   setCurrentTime: (currentTime: number) => void,
   isPlaying: Ref<boolean>,
+  commandTime: Ref<number>,
 }
 
 const timeLineRef = ref<HTMLElement>(null as unknown as HTMLElement)
@@ -49,12 +50,11 @@ let moveSegment: Segment
 let moveSegmentIndex: number
 let moveType: string
 let isStopPreview = false
-let commandTime: number = 0
 
 // 播放进度
 const playProgress = computed(() => {
   const { currentTime, duration } = videoMeta
-  const time = isPlaying.value ? currentTime : commandTime
+  const time = isPlaying.value ? currentTime : commandTime.value
   const progress = Decimal.div(time, duration).mul(100).toFixed(2) + '%'
   return progress
 })
@@ -79,7 +79,7 @@ const getTimeByMousePosition = (event: MouseEvent) => {
 // 手动设置播放进度
 const click = (event: MouseEvent) => {
   const time = getTimeByMousePosition(event)
-  commandTime = time
+  commandTime.value = time
   setCurrentTime(time)
 }
 
@@ -124,8 +124,8 @@ const preview = throttle((event: MouseEvent) => {
   setCurrentTime(time)
 }, 150)
 const onMouseleaveTimeLine = () => {
-  if (isNaN(commandTime)) return
-  setCurrentTime(commandTime)
+  if (isNaN(commandTime.value) || isPlaying.value) return
+  setCurrentTime(commandTime.value)
   isStopPreview = true
   setTimeout(() => {
     isStopPreview = false

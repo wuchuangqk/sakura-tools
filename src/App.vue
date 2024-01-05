@@ -3,9 +3,8 @@
 <template>
   <FileLoader v-if="!isFileOpened" @load="onFileLoad" />
   <div v-if="isFileOpened" class="flex-1 overflow-hidden">
-    <video ref="videoRef" :src="filePath"
-      style="width: 100%;height: 100%;object-fit: contain;" @loadedmetadata="onLoadedmetadata"
-      @timeupdate="timeupdate"></video>
+    <video ref="videoRef" :src="filePath" style="width: 100%;height: 100%;object-fit: contain;"
+      @loadedmetadata="onLoadedmetadata" @timeupdate="timeupdate"></video>
   </div>
   <TimeLine v-if="isLoadVideoMeta" :thumbnails="thumbnailsSorted" :segment-list="segmentList" />
   <div v-if="isLoadVideoMeta" class="flex gap-10">
@@ -13,13 +12,12 @@
     <span>当前：{{ currentTime }}</span>
   </div>
   <div v-if="isLoadVideoMeta" class="flex gap-1">
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="play">播放</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="pause">暂停</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="prevKeyFrame">上一个关键帧</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="nextKeyFrame">下一个关键帧</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="setKeyFrames">关键帧</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="addSegment">添加片段</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="setSegmentEnd">设置片段终点</button>
+    <button v-if="!isPlaying" class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="play">[space]播放</button>
+    <button v-if="isPlaying" class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="pause">[space]暂停</button>
+    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="prevKeyFrame">[A]上一个关键帧</button>
+    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="nextKeyFrame">[D]下一个关键帧</button>
+    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="addSegment">[Q]添加片段</button>
+    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="setSegmentEnd">[E]设置片段终点</button>
     <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="exportVideo">导出</button>
   </div>
   <div v-for="(segment, index) in segmentList" :key="index" class="flex gap-10">
@@ -38,6 +36,7 @@ import { fmtDuration, fmtSeconds } from '@/util'
 import { renderThumbnails, queryKeyFrames, cutAndMergeVideo } from '@/util/ffmpeg'
 import { sortBy } from 'lodash'
 import { Segment } from '@/util/Segment'
+import { bindKeyboard } from '@/util/keyboard'
 
 const videoRef = ref<HTMLVideoElement>(null as unknown as HTMLVideoElement)
 const videoMeta = reactive<IVideoMeta>({
@@ -52,6 +51,7 @@ const isLoadVideoMeta = ref(false)
 const keyFrames = ref<number[]>([])
 const segmentList = reactive<Segment[]>([])
 const isPlaying = ref(false)
+const commandTime = ref(0)
 
 const play = () => {
   videoRef.value.play()
@@ -60,6 +60,15 @@ const play = () => {
 const pause = () => {
   videoRef.value.pause()
   isPlaying.value = false
+  commandTime.value = videoRef.value.currentTime
+}
+const togglePlay = () => {
+  if (!isLoadVideoMeta.value) return
+  if (isPlaying.value) {
+    pause()
+  } else {
+    play()
+  }
 }
 const onLoadedmetadata = () => {
   const { duration } = videoRef.value
@@ -173,10 +182,21 @@ const exportVideo = async () => {
   alert('导出完成')
 }
 
+// 键位映射
+const keyboardActions: IKeyboardActions = {
+  'togglePlay': () => togglePlay(),
+  'prevKeyFrame': () => prevKeyFrame(),
+  'nextKeyFrame': () => nextKeyFrame(),
+  'setSegmentStart': () => addSegment(),
+  'setSegmentEnd': () => setSegmentEnd(),
+}
+bindKeyboard(keyboardActions)
+
 provide('APP', {
   videoMeta,
   isFileOpened,
   isPlaying,
+  commandTime,
   setCurrentTime,
 })
 </script>

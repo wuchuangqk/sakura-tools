@@ -25,3 +25,10 @@ interface ISegments {
   left: string
   width: string
 }
+
+interface IKeyboardActions {
+  [key: string]: Function
+}
+interface IKeyBindings {
+  [key: string]: string
+}
