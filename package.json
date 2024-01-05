@@ -1,6 +1,6 @@
 {
   "name": "sakura-cut",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "main": "dist/electron/main.mjs",
   "description": "video and audio editing software",
   "author": "wuchuangqk",
@@ -38,9 +38,11 @@
     "vue-tsc": "^1.8.27"
   },
   "dependencies": {
+    "ant-design-vue": "4.x",
     "decimal.js": "^10.4.3",
     "lodash": "^4.17.21",
     "mousetrap": "^1.6.5",
-    "p-map": "^7.0.1"
+    "p-map": "^7.0.1",
+    "pinia": "^2.1.7"
   }
 }

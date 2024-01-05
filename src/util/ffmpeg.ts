@@ -11,7 +11,7 @@ const THUMBNAIL_MAX = 10 // 缩略图上限
  * @param timestamp 
  * @returns 
  */
-const renderThumbnail = async (filePath: string, timestamp: number) => {
+export const renderThumbnail = async (filePath: string, timestamp: number) => {
   const args = [
     '-ss', timestamp,
     '-i', `"${filePath}"`,

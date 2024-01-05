@@ -20,7 +20,7 @@
       </div>
     </div>
     <TimeLinePointer :left="playProgress" />
-    <TimeLinePointer v-if="previewPointer !== playProgress" :left="previewPointer" type="preview" />
+    <TimeLinePointer v-if="!isPlaying && previewPointer !== playProgress" :left="previewPointer" type="preview" />
   </div>
 </template>
 <script setup lang="ts">
@@ -139,7 +139,7 @@ const onMouseleaveTimeLine = () => {
   z-index: 10;
   height: 20px;
   top: 0;
-  background-color: rgba(255, 255, 255, 0.714);
+  background-color: rgba(255, 255, 255, 0.3);
   transition: all 0.1s;
 
   // &:hover {
@@ -153,12 +153,12 @@ const onMouseleaveTimeLine = () => {
     cursor: e-resize;
 
     &.start-handler {
-      background-color: rgb(0, 213, 14);
+      background-color: rgba(255, 255, 255, .56);
       left: 0;
     }
 
     &.end-handler {
-      background-color: rgb(255, 42, 0);
+      background-color: rgba(255, 255, 255, .4);
       right: 0;
     }
   }

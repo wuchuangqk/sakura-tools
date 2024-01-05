@@ -1,32 +1,36 @@
 
 
 <template>
-  <FileLoader v-if="!isFileOpened" @load="onFileLoad" />
-  <div v-if="isFileOpened" class="flex-1 overflow-hidden">
-    <video ref="videoRef" :src="filePath" style="width: 100%;height: 100%;object-fit: contain;"
-      @loadedmetadata="onLoadedmetadata" @timeupdate="timeupdate"></video>
-  </div>
-  <TimeLine v-if="isLoadVideoMeta" :thumbnails="thumbnailsSorted" :segment-list="segmentList" />
-  <div v-if="isLoadVideoMeta" class="flex gap-10">
-    <span>时长：{{ videoMeta.durationFmt }}</span>
-    <span>当前：{{ currentTime }}</span>
-  </div>
-  <div v-if="isLoadVideoMeta" class="flex gap-1">
-    <button v-if="!isPlaying" class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="play">[space]播放</button>
-    <button v-if="isPlaying" class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="pause">[space]暂停</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="prevKeyFrame">[A]上一个关键帧</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="nextKeyFrame">[D]下一个关键帧</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="addSegment">[Q]添加片段</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="setSegmentEnd">[E]设置片段终点</button>
-    <button class="py-1 px-2 bg-indigo-500 text-white border rounded" @click="exportVideo">导出</button>
-  </div>
-  <div v-for="(segment, index) in segmentList" :key="index" class="flex gap-10">
-    <span>start{{ segment.start }}</span>
-    <span>end{{ segment.end }}</span>
-    <span>duration{{ fmtDuration(segment.end - segment.start) }}</span>
-    <span>left{{ segment.left }}</span>
-    <span>wdith{{ segment.width }}</span>
-  </div>
+  <ConfigProvider :theme="theme">
+    <FileLoader v-if="!isFileOpened" @load="onFileLoad" />
+    <div v-if="isFileOpened" class="flex-1 overflow-hidden flex">
+      <div class="flex-1">
+        <video ref="videoRef" :src="filePath" style="width: 100%;height: 100%;object-fit: contain;"
+        @loadedmetadata="onLoadedmetadata" @timeupdate="timeupdate"></video>
+        <!-- <video ref="videoRef" src="D:\Users\qingkong\Videos\Captures\枫丹.mp4"
+          style="width: 100%;height: 100%;object-fit: contain;" @loadedmetadata="onLoadedmetadata"
+          @timeupdate="timeupdate"></video> -->
+      </div>
+      <SegmentList :segment-list="segmentList" @remove="removeSegment" />
+    </div>
+    <TimeLine v-if="isLoadVideoMeta" :thumbnails="thumbnailsSorted" :segment-list="segmentList" />
+    <div v-if="isLoadVideoMeta" class="flex gap-10">
+      <span>时长：{{ videoMeta.durationFmt }}</span>
+    </div>
+    <div v-if="isLoadVideoMeta" class="flex gap-2">
+      <Button v-if="!isPlaying" type="primary" @click="play">[space]播放</Button>
+      <Button v-if="isPlaying" type="primary" @click="pause">[space]暂停</Button>
+      <Button type="primary" @click="prevKeyFrame">[A]上一个关键帧</Button>
+      <Button type="primary" @click="nextKeyFrame">[D]下一个关键帧</Button>
+      <Button type="primary" @click="addSegment">[Q]添加片段</Button>
+      <Button type="primary" @click="setSegmentEnd">[E]设置片段终点</Button>
+      <Button type="primary" @click="exportVideo">导出</Button>
+      <TimeInput :value="videoMeta.currentTime" @change="changeVideoCurrentTime" />
+    </div>
+    <div v-if="isLoading" class=" fixed top-0 right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-black/50">
+      <Spin tip="正在导出" size="large" />
+    </div>
+  </ConfigProvider>
 </template>
 <script setup lang="ts">
 import { computed, reactive, ref, provide } from 'vue'
@@ -37,7 +41,12 @@ import { renderThumbnails, queryKeyFrames, cutAndMergeVideo } from '@/util/ffmpe
 import { sortBy } from 'lodash'
 import { Segment } from '@/util/Segment'
 import { bindKeyboard } from '@/util/keyboard'
+import TimeInput from './components/TimeInput.vue'
+import SegmentList from './components/SegmentList.vue'
+import { useStore } from '@/util/store'
+import { Button, ConfigProvider, message, Spin } from 'ant-design-vue';
 
+const store = useStore()
 const videoRef = ref<HTMLVideoElement>(null as unknown as HTMLVideoElement)
 const videoMeta = reactive<IVideoMeta>({
   currentTime: 0,
@@ -45,13 +54,22 @@ const videoMeta = reactive<IVideoMeta>({
   durationFmt: '00:00:00.000',
 })
 const filePath = ref()
+// const filePath = ref('D:\\Users\\qingkong\\Videos\\Captures\\枫丹.mp4')
+// store.filePath = filePath.value
 const thumbnails = reactive<Array<{ time: number, url: string, timeFmt: string }>>([])
 const isFileOpened = ref(false)
+// const isFileOpened = ref(true)
 const isLoadVideoMeta = ref(false)
 const keyFrames = ref<number[]>([])
 const segmentList = reactive<Segment[]>([])
 const isPlaying = ref(false)
 const commandTime = ref(0)
+const theme = {
+  token: {
+    borderRadius: 2,
+  }
+}
+const isLoading = ref(false)
 
 const play = () => {
   videoRef.value.play()
@@ -75,6 +93,7 @@ const onLoadedmetadata = () => {
   Object.assign(videoMeta, fmtSeconds(duration))
   videoMeta.duration = duration
   videoMeta.durationFmt = fmtDuration(duration)
+  store.videoMeta = videoMeta
   console.log(`时长${videoMeta.duration}秒 ${videoMeta.durationFmt}`);
   isLoadVideoMeta.value = true
   showThumbnail()
@@ -140,6 +159,7 @@ const onFileLoad = (files: FileList) => {
   if (files.length === 0) return
   // @ts-ignore
   filePath.value = files[0].path
+  store.filePath = filePath.value
   console.log(filePath.value);
   isFileOpened.value = true
 }
@@ -161,8 +181,6 @@ const addSegment = () => {
     const newSegment = new Segment(videoMeta.duration, currentTime, end)
     segmentList.push(newSegment)
     segmentList.sort((a, b) => a.start - b.start)
-    console.log(segmentList);
-
   }
 }
 const setSegmentEnd = () => {
@@ -175,11 +193,16 @@ const setSegmentEnd = () => {
     alert('设置终点只能在片段区间进行')
   }
 }
+const removeSegment = (index: number) => {
+  segmentList.splice(index, 1)
+}
 
 const exportVideo = async () => {
-  // if (!segmentList.length) return
+  if (!segmentList.length) return
+  isLoading.value = true
   await cutAndMergeVideo(filePath.value, segmentList)
-  alert('导出完成')
+  isLoading.value = false
+  message.success('导出完成')
 }
 
 // 键位映射
@@ -191,6 +214,11 @@ const keyboardActions: IKeyboardActions = {
   'setSegmentEnd': () => setSegmentEnd(),
 }
 bindKeyboard(keyboardActions)
+
+const changeVideoCurrentTime = (time: number) => {
+  setCurrentTime(time)
+  commandTime.value = time
+}
 
 provide('APP', {
   videoMeta,
