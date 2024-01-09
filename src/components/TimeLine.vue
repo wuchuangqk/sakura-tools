@@ -24,26 +24,23 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, inject, ref, Ref } from 'vue'
+import { computed, ref } from 'vue'
 import TimeLinePointer from './TimeLinePointer.vue';
 import { Segment } from '@/util/Segment'
 import { throttle } from 'lodash'
 import Decimal from 'decimal.js';
+import { useStore } from '@/util/store'
+import { storeToRefs } from 'pinia'
 
-const props = withDefaults(defineProps<{
+defineProps<{
   thumbnails: any[],
-  segmentList: Segment[],
-}>(), {
-  thumbnails: () => [],
-  segmentList: () => [],
-})
+}>()
 
-const { videoMeta, setCurrentTime, isPlaying, commandTime } = inject('APP') as {
-  videoMeta: IVideoMeta,
-  setCurrentTime: (currentTime: number) => void,
-  isPlaying: Ref<boolean>,
-  commandTime: Ref<number>,
-}
+const store = useStore()
+const { isPlaying, commandTime } = storeToRefs(store)
+const videoMeta = store.videoMeta
+const segmentList = store.segmentList
+const { setCurrentTime } = store.action
 
 const timeLineRef = ref<HTMLElement>(null as unknown as HTMLElement)
 let moveSegment: Segment
@@ -86,7 +83,7 @@ const click = (event: MouseEvent) => {
 const mousedown = (segment: Segment, type: string) => {
   moveType = type
   moveSegment = segment
-  moveSegmentIndex = props.segmentList.findIndex(seg => seg.start === moveSegment.start && seg.end === moveSegment.end)
+  moveSegmentIndex = segmentList.findIndex(seg => seg.start === moveSegment.start && seg.end === moveSegment.end)
   document.addEventListener('mousemove', move)
   document.addEventListener('mouseup', mouseup)
 }
@@ -100,15 +97,15 @@ const move = throttle((event: MouseEvent) => {
   if (moveType === 'start') {
     // 处理边界
     if (moveSegmentIndex !== 0) {
-      if (time < props.segmentList[moveSegmentIndex - 1].end) {
-        time = props.segmentList[moveSegmentIndex - 1].end
+      if (time < segmentList[moveSegmentIndex - 1].end) {
+        time = segmentList[moveSegmentIndex - 1].end
       }
     }
     moveSegment.setStart(time)
   } else if (moveType === 'end') {
-    if (moveSegmentIndex !== props.segmentList.length - 1) {
-      if (time > props.segmentList[moveSegmentIndex + 1].start) {
-        time = props.segmentList[moveSegmentIndex + 1].start
+    if (moveSegmentIndex !== segmentList.length - 1) {
+      if (time > segmentList[moveSegmentIndex + 1].start) {
+        time = segmentList[moveSegmentIndex + 1].start
       }
     }
     moveSegment.setEnd(time)

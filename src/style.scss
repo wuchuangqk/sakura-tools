@@ -1,0 +1,76 @@
+@import "./style/preflight.css";
+@import "ant-design-vue/dist/reset.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #232323;
+  --color: #eee;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  background-color: var(--bg);
+  color: var(--color);
+  font-size: 14px;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// 滚动条整体部分
+::-webkit-scrollbar {
+  width: 12px; // 竖向滚动条
+  height: 12px; // 横向滚动条
+}
+
+// 外层轨道
+::-webkit-scrollbar-track {
+  background-color: #1c1c1c96;
+  box-shadow: -1px 0 1px rgb(0 0 0 / 30%);
+}
+
+// 滚动条里面可以拖动的那个
+::-webkit-scrollbar-thumb {
+  background-color: #5a5a5a;
+  box-shadow: -1px 0 1px rgb(0 0 0 / 20%);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #696969;
+}
+
+// 边角
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+.text-button {
+  color: #1677ff;
+  cursor: pointer;
+
+  &:hover {
+    color: #2982fe;
+  }
+}
+
+.fs-13 {
+  font-size: 13px;
+}
+
+.ant-btn-primary:disabled {
+  border-color: transparent;
+  color: #999;
+  background-color: #666666;
+  box-shadow: 0 2px 0 rgba(5, 145, 255, 0.1);
+}
+
+.ant-tooltip .ant-tooltip-inner {
+  color: var(--color);
+}

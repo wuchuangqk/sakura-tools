@@ -1,7 +1,15 @@
 <template>
   <div class="segment-list">
-    <span v-show="false">{{ segmentList }}</span>
-    <div>
+    <div class="flex p-10 justify-between items-center">
+      <div>
+        <span>{{ segmentList.length }}</span>
+        <span class="text-gray-500 fs-13 ml-2">个片段</span>
+      </div>
+      <div>
+        <span class="text-button fs-13" @click="segmentList.length = 0">全部删除</span>
+      </div>
+    </div>
+    <div class=" flex-1 overflow-auto">
       <div v-for="(segment, index) in segmentList" :key="segment.key"
         class="px-10 py-10 border-b border-[#555555] last-of-type:border-b-0">
         <div class=" relative">
@@ -10,54 +18,60 @@
           </div>
         </div>
         <div class="flex justify-between items-center mt-6">
-          <TimeInput :ref="(el) => setStartInputRef(el, segment.key)" :value="segment.start"
+          <TimeInput :ref="(el) => startInputRefs[segment.key] = el" :value="segment.start"
             @change="(time) => setTime(index, time, 'start')" />
           <span>-</span>
-          <TimeInput :ref="(el) => setEndInputRef(el, segment.key)" :value="segment.end"
+          <TimeInput :ref="(el) => endInputRefs[segment.key] = el" :value="segment.end"
             @change="(time) => setTime(index, time, 'end')" />
         </div>
       </div>
     </div>
+    <div class="flex p-6">
+      <Button type="primary" class="w-full" :disabled="segmentList.length === 0" :loading="exportLoading"
+        @click="exportVideo">导出</Button>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
-import { Segment } from '@/util/Segment';
 import TimeInput from './TimeInput.vue';
-import { computed, inject, ref } from 'vue';
-import { message } from 'ant-design-vue';
-
-const props = defineProps<{
-  segmentList: Segment[],
-}>()
+import { message, Button } from 'ant-design-vue';
+import { useStore } from '@/util/store'
+import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { cutAndMergeVideo } from '@/util/ffmpeg'
 
 const call = defineEmits(['remove'])
 
-const { setCurrentTime } = inject('APP') as {
-  setCurrentTime: (currentTime: number) => void,
-}
+const store = useStore()
+const { filePath } = storeToRefs(store)
+const segmentList = store.segmentList
+const { setCurrentTime } = store.action
 
 const startInputRefs: any = {}
 const endInputRefs: any = {}
 
-const setStartInputRef = (el: any, key: symbol) => {
-  startInputRefs[key] = el
-}
-const setEndInputRef = (el: any, key: symbol) => {
-  endInputRefs[key] = el
-}
+const exportLoading = ref(false)
 
 const setTime = (index: number, time: number, type: string) => {
-  const segment = props.segmentList[index]
+  const segment = segmentList[index]
   if (type === 'start') {
     if (time >= segment.end) {
       startInputRefs[segment.key].reset()
       return message.error('开始时间不能大于结束时间')
+    }
+    if (index !== 0 && time <= segmentList[index - 1].end) {
+      startInputRefs[segment.key].reset()
+      return
     }
     segment.setStart(time)
   } else if (type === 'end') {
     if (time <= segment.start) {
       endInputRefs[segment.key].reset()
       return message.error('结束时间不能小于开始时间')
+    }
+    if (index !== segmentList.length - 1 && time >= segmentList[index + 1].start) {
+      startInputRefs[segment.key].reset()
+      return
     }
     segment.setEnd(time)
   }
@@ -71,11 +85,21 @@ const remove = (index: number) => {
   call('remove', index)
 }
 
+const exportVideo = async () => {
+  if (!segmentList.length) return
+  exportLoading.value = true
+  await cutAndMergeVideo(filePath.value, segmentList)
+  exportLoading.value = false
+  message.success('导出完成')
+}
 </script>
 
 <style lang="scss" scoped>
 .segment-list {
   flex-basis: 220px;
   background: #464646;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 </style>

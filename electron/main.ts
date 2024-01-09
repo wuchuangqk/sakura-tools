@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, screen } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, screen, Menu } from 'electron'
 import { release } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -124,3 +124,9 @@ ipcMain.handle('open-win', (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg })
   }
 })
+
+// const menuTemplate = [
+//   { label: '文件', submenu: [{ role: '打开文件' }] }
+// ]
+// const menu = Menu.buildFromTemplate(menuTemplate)
+// Menu.setApplicationMenu(menu)

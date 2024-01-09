@@ -15,7 +15,7 @@ export const debug = (info: string | Buffer | Uint8Array) => {
     method: 'POST',
     path: '/'
   }
-  const req = http.request(options)
-  req.write(info)
-  req.end()
+  // const req = http.request(options)
+  // req.write(info)
+  // req.end()
 }

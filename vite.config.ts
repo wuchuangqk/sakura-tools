@@ -5,6 +5,8 @@ import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import pkg from './package.json'
 import { fileURLToPath, URL } from 'node:url'
+import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
@@ -64,6 +66,11 @@ export default defineConfig(({ command }) => {
       ]),
       // Use Node.js API in the Renderer process
       renderer(),
+      createSvgIconsPlugin({
+        iconDirs: [path.resolve(process.cwd(), 'src/assets/icon')],
+        symbolId: 'icon-[dir]-[name]',
+        svgoOptions: true
+      }),
     ],
     server: process.env.VSCODE_DEBUG && (() => {
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)

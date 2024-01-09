@@ -1,75 +1,104 @@
-
-
 <template>
-  <ConfigProvider :theme="theme">
+  <ConfigProvider :theme="theme" :locale="zhCN">
     <FileLoader v-if="!isFileOpened" @load="onFileLoad" />
     <div v-if="isFileOpened" class="flex-1 overflow-hidden flex">
-      <div class="flex-1">
-        <video ref="videoRef" :src="filePath" style="width: 100%;height: 100%;object-fit: contain;"
-        @loadedmetadata="onLoadedmetadata" @timeupdate="timeupdate"></video>
-        <!-- <video ref="videoRef" src="D:\Users\qingkong\Videos\Captures\枫丹.mp4"
-          style="width: 100%;height: 100%;object-fit: contain;" @loadedmetadata="onLoadedmetadata"
-          @timeupdate="timeupdate"></video> -->
+      <div class="flex-1 flex flex-col">
+        <div class="flex-1 overflow-hidden">
+          <video ref="videoRef" :src="filePath" class="w-full h-full object-contain" @loadedmetadata="onLoadedmetadata"
+            @timeupdate="timeupdate"></video>
+          <!-- <video ref="videoRef" src="D:\Users\qingkong\Videos\Captures\枫丹.mp4" class="w-full h-full object-contain"
+            @loadedmetadata="onLoadedmetadata" @timeupdate="timeupdate"></video> -->
+        </div>
+        <div v-if="isLoadVideoMeta" class="flex h-[40px] items-center px-10">
+          <div class="flex items-center">
+            <TimeInput :value="videoMeta.currentTime" @change="changeVideoCurrentTime" />
+            <span class=" text-gray-400 fs-13 ml-10">{{ videoMeta.durationFmt }}</span>
+          </div>
+          <div class="flex-1 gap-16 flex justify-center">
+            <Tooltip>
+              <template #title>
+                <div class="fs-13">设置片段起点</div>
+                <div class="fs-13 text-gray-400">快捷键：Q</div>
+              </template>
+              <Icon name="cutStart" size="20" @click="addSegment" />
+            </Tooltip>
+            <Tooltip>
+              <template #title>
+                <div class="fs-13">上一个关键帧</div>
+                <div class="fs-13 text-gray-400">快捷键：A</div>
+              </template>
+              <Icon name="prevKeyFrame" size="20" @click="prevKeyFrame" />
+            </Tooltip>
+            <Tooltip>
+              <template #title>
+                <div class="fs-13">{{ isPlaying ? '暂停' : '播放' }}</div>
+                <div class="fs-13 text-gray-400">快捷键：空格</div>
+              </template>
+              <Icon v-if="!isPlaying" name="play" size="20" @click="play" />
+              <Icon v-else name="pause" size="20" @click="pause" />
+            </Tooltip>
+            <Tooltip>
+              <template #title>
+                <div class="fs-13">下一个关键帧</div>
+                <div class="fs-13 text-gray-400">快捷键：D</div>
+              </template>
+              <Icon name="nextKeyFrame" size="20" @click="nextKeyFrame" />
+            </Tooltip>
+            <Tooltip>
+              <template #title>
+                <div class="fs-13">设置片段终点</div>
+                <div class="fs-13 text-gray-400">快捷键：E</div>
+              </template>
+              <Icon name="cutEnd" size="20" @click="setSegmentEnd" />
+            </Tooltip>
+          </div>
+          <div></div>
+        </div>
       </div>
-      <SegmentList :segment-list="segmentList" @remove="removeSegment" />
+      <SegmentList @remove="removeSegment" />
     </div>
-    <TimeLine v-if="isLoadVideoMeta" :thumbnails="thumbnailsSorted" :segment-list="segmentList" />
-    <div v-if="isLoadVideoMeta" class="flex gap-10">
-      <span>时长：{{ videoMeta.durationFmt }}</span>
+    <TimeLine v-if="isLoadVideoMeta" :thumbnails="thumbnailsSorted" :set-current-time="setCurrentTime" />
+    <div v-if="isLoadVideoMeta" class=" text-gray-400 fs-13 h-30 flex items-center px-10">
+      <Icon name="video" size="16" color="#9ca3af" /><span>{{ filePath }}</span>
     </div>
-    <div v-if="isLoadVideoMeta" class="flex gap-2">
-      <Button v-if="!isPlaying" type="primary" @click="play">[space]播放</Button>
-      <Button v-if="isPlaying" type="primary" @click="pause">[space]暂停</Button>
-      <Button type="primary" @click="prevKeyFrame">[A]上一个关键帧</Button>
-      <Button type="primary" @click="nextKeyFrame">[D]下一个关键帧</Button>
-      <Button type="primary" @click="addSegment">[Q]添加片段</Button>
-      <Button type="primary" @click="setSegmentEnd">[E]设置片段终点</Button>
-      <Button type="primary" @click="exportVideo">导出</Button>
-      <TimeInput :value="videoMeta.currentTime" @change="changeVideoCurrentTime" />
-    </div>
-    <div v-if="isLoading" class=" fixed top-0 right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-black/50">
-      <Spin tip="正在导出" size="large" />
-    </div>
+    <Modal v-model:open="showConfirm" title="提示" centered @ok="handleOk">
+      <div>替换当前文件吗？</div>
+    </Modal>
   </ConfigProvider>
 </template>
 <script setup lang="ts">
-import { computed, reactive, ref, provide } from 'vue'
+import { computed, ref } from 'vue'
 import TimeLine from '@/components/TimeLine.vue'
 import FileLoader from './components/FileLoader.vue'
 import { fmtDuration, fmtSeconds } from '@/util'
-import { renderThumbnails, queryKeyFrames, cutAndMergeVideo } from '@/util/ffmpeg'
+import { renderThumbnails, queryKeyFrames } from '@/util/ffmpeg'
 import { sortBy } from 'lodash'
 import { Segment } from '@/util/Segment'
 import { bindKeyboard } from '@/util/keyboard'
 import TimeInput from './components/TimeInput.vue'
 import SegmentList from './components/SegmentList.vue'
 import { useStore } from '@/util/store'
-import { Button, ConfigProvider, message, Spin } from 'ant-design-vue';
+import { Tooltip, ConfigProvider, message, Spin, Modal } from 'ant-design-vue';
+import { storeToRefs } from 'pinia'
+import Icon from './components/Icon.vue'
+import { useDrop } from '@/composables'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
 
 const store = useStore()
+const { filePath, isFileOpened, isPlaying, commandTime, keyFrames } = storeToRefs(store)
+const videoMeta = store.videoMeta
+const segmentList = store.segmentList
+const thumbnails = store.thumbnails
+
 const videoRef = ref<HTMLVideoElement>(null as unknown as HTMLVideoElement)
-const videoMeta = reactive<IVideoMeta>({
-  currentTime: 0,
-  duration: 0,
-  durationFmt: '00:00:00.000',
-})
-const filePath = ref()
-// const filePath = ref('D:\\Users\\qingkong\\Videos\\Captures\\枫丹.mp4')
-// store.filePath = filePath.value
-const thumbnails = reactive<Array<{ time: number, url: string, timeFmt: string }>>([])
-const isFileOpened = ref(false)
-// const isFileOpened = ref(true)
 const isLoadVideoMeta = ref(false)
-const keyFrames = ref<number[]>([])
-const segmentList = reactive<Segment[]>([])
-const isPlaying = ref(false)
-const commandTime = ref(0)
+
 const theme = {
   token: {
     borderRadius: 2,
+    wireframe: true,
   }
 }
-const isLoading = ref(false)
 
 const play = () => {
   videoRef.value.play()
@@ -93,7 +122,6 @@ const onLoadedmetadata = () => {
   Object.assign(videoMeta, fmtSeconds(duration))
   videoMeta.duration = duration
   videoMeta.durationFmt = fmtDuration(duration)
-  store.videoMeta = videoMeta
   console.log(`时长${videoMeta.duration}秒 ${videoMeta.durationFmt}`);
   isLoadVideoMeta.value = true
   showThumbnail()
@@ -159,7 +187,6 @@ const onFileLoad = (files: FileList) => {
   if (files.length === 0) return
   // @ts-ignore
   filePath.value = files[0].path
-  store.filePath = filePath.value
   console.log(filePath.value);
   isFileOpened.value = true
 }
@@ -178,9 +205,12 @@ const addSegment = () => {
     if (typeof adjacent !== 'undefined') {
       end = adjacent.start
     }
-    const newSegment = new Segment(videoMeta.duration, currentTime, end)
+    const newSegment = new Segment(currentTime, end)
     segmentList.push(newSegment)
     segmentList.sort((a, b) => a.start - b.start)
+    // newSegment是非响应式对象，存到segmentList里面的才会被变成响应式对象
+    const reactiveSeg = segmentList.find(seg => seg.key === newSegment.key)
+    reactiveSeg!.createThumbnail()
   }
 }
 const setSegmentEnd = () => {
@@ -190,19 +220,11 @@ const setSegmentEnd = () => {
   if (typeof segment !== 'undefined') {
     segment.setEnd(currentTime)
   } else {
-    alert('设置终点只能在片段区间进行')
+    message.error('设置终点只能在片段区间进行')
   }
 }
 const removeSegment = (index: number) => {
   segmentList.splice(index, 1)
-}
-
-const exportVideo = async () => {
-  if (!segmentList.length) return
-  isLoading.value = true
-  await cutAndMergeVideo(filePath.value, segmentList)
-  isLoading.value = false
-  message.success('导出完成')
 }
 
 // 键位映射
@@ -220,13 +242,9 @@ const changeVideoCurrentTime = (time: number) => {
   commandTime.value = time
 }
 
-provide('APP', {
-  videoMeta,
-  isFileOpened,
-  isPlaying,
-  commandTime,
-  setCurrentTime,
-})
+const { showConfirm, handleOk } = useDrop(onFileLoad)
+
+store.action.setCurrentTime = setCurrentTime
 </script>
 <style scoped>
 .logo {

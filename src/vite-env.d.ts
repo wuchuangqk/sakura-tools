@@ -25,3 +25,8 @@ interface IKeyboardActions {
 interface IKeyBindings {
   [key: string]: string
 }
+
+interface IStoreAction {
+  setCurrentTime: (currentTime: number) => void
+  // exportVideo: () => Promise<void>
+}
