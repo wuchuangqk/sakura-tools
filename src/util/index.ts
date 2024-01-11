@@ -58,3 +58,35 @@ export const reverseToSecond = (time: string) => {
   console.log(match, seconds);
   return seconds
 }
+
+/**
+ * 取平均中位数
+ */
+export const getAvgNums = (arr: number[], max: number) => {
+  function center(result: {index: number, value: number}[]) {
+    if (result.length === 0) {
+      result = [
+        { index: 0, value: arr[0] },
+        { index: Math.floor(arr.length / 2), value: arr[Math.floor(arr.length / 2)] },
+        { index: arr.length - 1, value: arr[arr.length - 1] },
+      ]
+    }
+    // 取相邻两个元素的中间数
+    for (let i = 0; i < result.length - 1; i++) {
+      const curIndex = result[i].index
+      const nextIndex = result[i + 1].index
+      if (nextIndex - curIndex <= 1 || result.length === max) {
+        return result
+      }
+      const avgIndex = Math.floor((nextIndex - curIndex) / 2) + curIndex
+      result.splice(i + 1, 0, { index: avgIndex, value: arr[avgIndex] })
+      i++
+    }
+    return center(result)
+  }
+  if (arr.length <= max) {
+    return arr
+  }
+  const result = center([])
+  return result.map(v => v.value)
+}

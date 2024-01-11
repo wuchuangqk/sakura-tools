@@ -13,12 +13,15 @@
 import { useStore } from '@/util/store'
 import { computed } from 'vue';
 import Decimal from 'decimal.js'
+import { getAvgNums } from '@/util'
 
 const store = useStore()
 const videoMeta = store.videoMeta
 
 const scaleLines = computed(() => {
-  return store.keyFrames.map(frame => {
+  // 长的视频关键帧可能有几千个，时间线放不下，所以要限制展示的关键帧数量
+  const keyFrames = getAvgNums(store.keyFrames, 100)
+  return keyFrames.map((frame: number) => {
     return ({ left: Decimal.div(frame, videoMeta.duration).mul(100) + '%' })
   })
 })
