@@ -57,9 +57,16 @@
       </div>
       <SegmentList @remove="removeSegment" />
     </div>
-    <TimeLine v-if="isLoadVideoMeta" :thumbnails="thumbnailsSorted" :set-current-time="setCurrentTime" />
-    <div v-if="isLoadVideoMeta" class=" text-gray-400 fs-13 h-30 flex items-center px-10">
-      <Icon name="video" size="16" color="#9ca3af" /><span>{{ projectMeta.filePath }}</span>
+    <TimeLine v-if="isLoadVideoMeta" />
+    <div v-if="isLoadVideoMeta" class=" text-gray-400 fs-13 h-30 flex items-center justify-between px-10">
+      <div class="flex items-center">
+        <Icon name="video" size="16" color="#9ca3af" />
+        <span>{{ projectMeta.filePath }}</span>
+      </div>
+      <div class="flex gap-10">
+        <span>{{ appMeta.name }}</span>
+        <span>{{ appMeta.version }}</span>
+      </div>
     </div>
     <Modal v-model:open="showConfirm" title="提示" centered @ok="handleOk">
       <div>替换当前文件吗？</div>
@@ -68,31 +75,31 @@
   </ConfigProvider>
 </template>
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import TimeLine from '@/components/TimeLine.vue'
 import StartPage from './components/StartPage.vue'
 import { fmtDuration, fmtSeconds } from '@/util'
 import { renderThumbnails, queryKeyFrames } from '@/util/ffmpeg'
-import { sortBy } from 'lodash'
 import { Segment } from '@/util/Segment'
 import { bindKeyboard } from '@/util/keyboard'
 import TimeInput from './components/TimeInput.vue'
 import SegmentList from './components/SegmentList.vue'
 import { useStore } from '@/util/store'
-import { Tooltip, ConfigProvider, message, Modal, Button } from 'ant-design-vue';
 import { storeToRefs } from 'pinia'
-import Icon from './components/Icon.vue'
 import { useDrop } from '@/composables'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import { message } from 'ant-design-vue';
 
 const { os } = window.IPC
 
 const store = useStore()
+store.init()
 const { isFileOpened, isPlaying, commandTime, keyFrames } = storeToRefs(store)
 const videoMeta = store.videoMeta
 const segmentList = store.segmentList
 const thumbnails = store.thumbnails
 const projectMeta = store.projectMeta
+const appMeta = store.appMeta
 
 const videoRef = ref<HTMLVideoElement>(null as unknown as HTMLVideoElement)
 const isLoadVideoMeta = ref(false)
@@ -141,9 +148,12 @@ const timeupdate = () => {
   videoMeta.currentTime = currentTime
 }
 
-const setCurrentTime = (currentTime: number) => {
+const setCurrentTime = (currentTime: number, preview: boolean = false) => {
   videoMeta.currentTime = currentTime
   videoRef.value.currentTime = currentTime
+  if (!preview) {
+    commandTime.value = currentTime
+  }
 }
 
 const showThumbnail = () => {
@@ -158,8 +168,6 @@ const showThumbnail = () => {
     console.error('Failed to render thumbnail', err);
   })
 }
-
-const thumbnailsSorted = computed(() => sortBy(thumbnails, (thumbnail: { time: number }) => thumbnail.time))
 
 const prevKeyFrame = () => {
   const { currentTime } = videoMeta

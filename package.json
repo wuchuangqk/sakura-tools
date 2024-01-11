@@ -1,6 +1,7 @@
 {
   "name": "sakura-cut",
-  "version": "1.7.0",
+  "productName": "樱花剪辑",
+  "version": "1.8.0",
   "main": "dist/electron/main.mjs",
   "description": "video and audio editing software",
   "author": "wuchuangqk",

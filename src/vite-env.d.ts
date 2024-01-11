@@ -14,6 +14,10 @@ interface IOS {
   removeFile: (pathList: string[]) => Promise<void>,
   openDir: (dirPath: string) => Promise<void>,
 }
+interface IApp {
+  getVersion: () => Promise<string>,
+  getName: () => Promise<string>,
+}
 interface IVideoMeta {
   currentTime: number
   duration: number
@@ -34,6 +38,12 @@ interface IKeyBindings {
 }
 
 interface IStoreAction {
-  setCurrentTime: (currentTime: number) => void
+  setCurrentTime: (currentTime: number, preivew?: boolean) => void
   // exportVideo: () => Promise<void>
+}
+
+interface IThumbnail {
+  time: number, 
+  url: string, 
+  timeFmt: string
 }

@@ -1,12 +1,17 @@
 <template>
   <div class="segment-list">
-    <div class="flex p-10 justify-between items-center">
+    <div class="flex p-10 justify-between items-center select-none">
       <div>
         <span>{{ segmentList.length }}</span>
         <span class="text-gray-500 fs-13 ml-2">个片段</span>
       </div>
       <div>
-        <span class="text-button fs-13" @click="segmentList.length = 0">全部删除</span>
+        <Tooltip>
+          <template #title>
+            <div class="fs-13">删除所有片段</div>
+          </template>
+          <Icon name="del" size="16" @click="segmentList.length = 0" />
+        </Tooltip>
       </div>
     </div>
     <div class=" flex-1 overflow-auto">

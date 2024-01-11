@@ -10,5 +10,9 @@ contextBridge.exposeInMainWorld('IPC', {
     createTxtFile: (outPathList: string[], dir) => ipcRenderer.invoke('os:createTxtFile', outPathList, dir),
     removeFile: (pathList: string[]) => ipcRenderer.invoke('os:removeFile', pathList),
     openDir: (dirPath) => ipcRenderer.invoke('os:openDir', dirPath),
+  },
+  app: {
+    getVersion: () => ipcRenderer.invoke('app:getVersion'),
+    getName: () => ipcRenderer.invoke('app:getName'),
   }
 })

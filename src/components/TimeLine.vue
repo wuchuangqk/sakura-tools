@@ -1,8 +1,10 @@
 <template>
   <div ref="timeLineRef" class="relative flex flex-col bg-[#313131] pt-20 pb-20 select-none" @click="click"
     @mousemove="preview" @mouseleave="onMouseleaveTimeLine">
-    <div class="flex mb-10">
-      <span v-for="thumbnail in thumbnails" :key="thumbnail.time" class="flex-1 overflow-hidden text-xs text-gray-500">
+    <ScaleLine class="mb-2" />
+    <div class="flex mb-16">
+      <span v-for="thumbnail in thumbnailsSorted" :key="thumbnail.time"
+        class="flex-1 overflow-hidden text-xs text-gray-500">
         {{ thumbnail.timeFmt }}
       </span>
     </div>
@@ -31,15 +33,14 @@ import { throttle } from 'lodash'
 import Decimal from 'decimal.js';
 import { useStore } from '@/util/store'
 import { storeToRefs } from 'pinia'
-
-defineProps<{
-  thumbnails: any[],
-}>()
+import ScaleLine from './ScaleLine.vue';
+import { sortBy } from 'lodash'
 
 const store = useStore()
 const { isPlaying, commandTime } = storeToRefs(store)
 const videoMeta = store.videoMeta
 const segmentList = store.segmentList
+const thumbnails = store.thumbnails
 const { setCurrentTime } = store.action
 
 const timeLineRef = ref<HTMLElement>(null as unknown as HTMLElement)
@@ -61,6 +62,8 @@ const previewPointer = computed(() => {
   const progress = Decimal.div(currentTime, duration).mul(100).toFixed(2) + '%'
   return progress
 })
+
+const thumbnailsSorted = computed(() => sortBy(thumbnails, (thumbnail: { time: number; }) => thumbnail.time)) as unknown as IThumbnail[]
 
 /**
  * 通过鼠标在时间线上落点的位置，来推算出时间点
@@ -84,14 +87,17 @@ const mousedown = (segment: Segment, type: string) => {
   moveType = type
   moveSegment = segment
   moveSegmentIndex = segmentList.findIndex(seg => seg.start === moveSegment.start && seg.end === moveSegment.end)
-  document.addEventListener('mousemove', move)
+  document.addEventListener('mousemove', changeSegmentRange)
   document.addEventListener('mouseup', mouseup)
 }
 const mouseup = () => {
-  document.removeEventListener('mousemove', move)
+  document.removeEventListener('mousemove', changeSegmentRange)
   document.removeEventListener('mouseup', mouseup)
 }
-const move = throttle((event: MouseEvent) => {
+/**
+ * 拖拽改变片段长度
+ */
+const changeSegmentRange = throttle((event: MouseEvent) => {
   let time = getTimeByMousePosition(event)
 
   if (moveType === 'start') {
@@ -111,14 +117,17 @@ const move = throttle((event: MouseEvent) => {
     moveSegment.setEnd(time)
   }
   if (!isPlaying.value) {
-    setCurrentTime(time)
+    setCurrentTime(time, true)
   }
 }, 150)
 
+/**
+ * 鼠标在时间线滑过，预览视频画面
+ */
 const preview = throttle((event: MouseEvent) => {
   if (isPlaying.value || isStopPreview) return
   const time = getTimeByMousePosition(event)
-  setCurrentTime(time)
+  setCurrentTime(time, true)
 }, 150)
 const onMouseleaveTimeLine = () => {
   if (isNaN(commandTime.value) || isPlaying.value) return

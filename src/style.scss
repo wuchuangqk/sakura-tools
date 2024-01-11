@@ -16,12 +16,12 @@ body,
   background-color: var(--bg);
   color: var(--color);
   font-size: 14px;
+  overflow: hidden;
 }
 
 #app {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 // 滚动条整体部分

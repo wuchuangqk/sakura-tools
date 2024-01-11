@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 import { Segment } from '@/util/Segment'
+const { os, app } = window.IPC
 
 export const useStore = defineStore('app', () => {
   const videoMeta = reactive<IVideoMeta>({
@@ -17,8 +18,12 @@ export const useStore = defineStore('app', () => {
   const segmentList = reactive<Segment[]>([]) // 片段列表
   const isPlaying = ref(false) // 视频是否在播放
   const commandTime = ref(0)
-  const thumbnails = reactive<Array<{ time: number, url: string, timeFmt: string }>>([]) // 视频缩略图
+  const thumbnails = reactive<IThumbnail[]>([]) // 视频缩略图
   const keyFrames = ref<number[]>([]) // 关键帧时间点集合
+  const appMeta = reactive({
+    name: '',
+    version: ''
+  })
 
   // @ts-ignore
   const action: IStoreAction = {}
@@ -33,6 +38,10 @@ export const useStore = defineStore('app', () => {
     thumbnails.length = 0
     keyFrames.value.length = 0
   }
+  const init = async () => {
+    appMeta.name = await app.getName()
+    appMeta.version = await app.getVersion()
+  }
 
   return {
     videoMeta,
@@ -44,6 +53,8 @@ export const useStore = defineStore('app', () => {
     thumbnails,
     keyFrames,
     projectMeta,
+    appMeta,
     reset,
+    init,
   }
 })
