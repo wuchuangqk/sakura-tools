@@ -10,13 +10,20 @@ interface IFfmpeg {
 }
 interface IOS {
   getFileMeta: (filePath: string) => Promise<{ name: string, dir: string }>,
-  createTxt: (outPathList: string[], dir: string) => Promise<void>,
+  createTxtFile: (outPathList: string[], dir: string) => Promise<void>,
   removeFile: (pathList: string[]) => Promise<void>,
+  openDir: (dirPath: string) => Promise<void>,
 }
 interface IVideoMeta {
   currentTime: number
   duration: number
   durationFmt: string
+}
+
+interface IProjectMeta {
+  fileName: string
+  outDir: string
+  filePath: string
 }
 
 interface IKeyboardActions {

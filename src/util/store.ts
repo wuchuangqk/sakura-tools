@@ -4,18 +4,21 @@ import { Segment } from '@/util/Segment'
 
 export const useStore = defineStore('app', () => {
   const videoMeta = reactive<IVideoMeta>({
-    currentTime: 0,
-    duration: 0,
+    currentTime: 0, // 视频当前时间点（单位：秒）
+    duration: 0, // 视频时长（单位：秒）
     durationFmt: '00:00:00.000',
   })
-  const filePath = ref()
-  // const filePath = ref('D:\\Users\\qingkong\\Videos\\Captures\\枫丹.mp4')
-  const isFileOpened = ref(false)
-  const segmentList = reactive<Segment[]>([])
-  const isPlaying = ref(false)
+  const projectMeta = reactive({
+    fileName: '',
+    outDir: '', // 导出视频所在目录
+    filePath: '',
+  })
+  const isFileOpened = ref(false) // 是否打开文件
+  const segmentList = reactive<Segment[]>([]) // 片段列表
+  const isPlaying = ref(false) // 视频是否在播放
   const commandTime = ref(0)
-  const thumbnails = reactive<Array<{ time: number, url: string, timeFmt: string }>>([])
-  const keyFrames = ref<number[]>([])
+  const thumbnails = reactive<Array<{ time: number, url: string, timeFmt: string }>>([]) // 视频缩略图
+  const keyFrames = ref<number[]>([]) // 关键帧时间点集合
 
   // @ts-ignore
   const action: IStoreAction = {}
@@ -33,7 +36,6 @@ export const useStore = defineStore('app', () => {
 
   return {
     videoMeta,
-    filePath,
     isFileOpened,
     segmentList,
     isPlaying,
@@ -41,6 +43,7 @@ export const useStore = defineStore('app', () => {
     action,
     thumbnails,
     keyFrames,
+    projectMeta,
     reset,
   }
 })

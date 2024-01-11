@@ -30,25 +30,38 @@
       <Button type="primary" class="w-full" :disabled="segmentList.length === 0" :loading="exportLoading"
         @click="exportVideo">导出</Button>
     </div>
+    <Modal v-model:open="modal.exportComplete" title="提示" centered>
+      <div>导出完成，用时：{{ exportTime }}</div>
+      <template #footer>
+        <Button type="primary" @click="openOutDir">打开输出目录</Button>
+      </template>
+    </Modal>
   </div>
 </template>
 <script setup lang="ts">
 import TimeInput from './TimeInput.vue';
-import { message, Button } from 'ant-design-vue';
+import { message, Button, Modal } from 'ant-design-vue';
 import { useStore } from '@/util/store'
-import { ref } from 'vue';
-import { storeToRefs } from 'pinia';
+import { reactive, ref } from 'vue';
 import { cutAndMergeVideo } from '@/util/ffmpeg'
+import { Performance } from '@/util/Performance'
 
 const call = defineEmits(['remove'])
 
+const { os } = window.IPC
+
 const store = useStore()
-const { filePath } = storeToRefs(store)
 const segmentList = store.segmentList
+const projectMeta = store.projectMeta
 const { setCurrentTime } = store.action
 
 const startInputRefs: any = {}
 const endInputRefs: any = {}
+
+const modal = reactive({
+  exportComplete: false,
+})
+const exportTime = ref('')
 
 const exportLoading = ref(false)
 
@@ -87,10 +100,17 @@ const remove = (index: number) => {
 
 const exportVideo = async () => {
   if (!segmentList.length) return
+  Performance.start()
   exportLoading.value = true
-  await cutAndMergeVideo(filePath.value, segmentList)
+  await cutAndMergeVideo(segmentList)
   exportLoading.value = false
   message.success('导出完成')
+  exportTime.value = Performance.end()
+  modal.exportComplete = true
+}
+const openOutDir = () => {
+  modal.exportComplete = false
+  os.openDir(projectMeta.outDir)
 }
 </script>
 

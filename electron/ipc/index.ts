@@ -6,8 +6,9 @@ import os from './os'
 const initIpcClient = () => {
   ipcMain.handle('ffmpeg:run', (e, ...args: [string[], string, any]) => ffmpeg.run(...args))
   ipcMain.handle('os:getFileMeta', (e, filePath: string) => os.getFileMeta(filePath))
-  ipcMain.handle('os:createTxt', (e, outPathList: string[], dir) => os.createTxt(outPathList, dir))
+  ipcMain.handle('os:createTxtFile', (e, outPathList: string[], dir) => os.createTxtFile(outPathList, dir))
   ipcMain.handle('os:removeFile', (e, pathList: string[]) => os.removeFile(pathList))
+  ipcMain.handle('os:openDir', (e, dirPath) => os.openDir(dirPath))
 }
 
 export default initIpcClient

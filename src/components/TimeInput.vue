@@ -20,8 +20,6 @@ const time = ref()
 
 const isValid = (time: string) => /^\d{2}:\d{2}:\d{2}:\d{2}$/.test(time);
 const onChange = () => {
-  console.log(time.value, isValid(time.value));
-
   if (!isValid(time.value)) {
     time.value = valueFmt
   } else {

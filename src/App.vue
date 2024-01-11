@@ -1,17 +1,17 @@
 <template>
   <ConfigProvider :theme="theme" :locale="zhCN">
-    <FileLoader v-if="!isFileOpened" @load="onFileLoad" />
+    <StartPage v-if="!isFileOpened" @load="onFileLoad" />
     <div v-if="isFileOpened" class="flex-1 overflow-hidden flex">
       <div class="flex-1 flex flex-col">
         <div class="flex-1 overflow-hidden">
-          <video ref="videoRef" :src="filePath" class="w-full h-full object-contain" @loadedmetadata="onLoadedmetadata"
-            @timeupdate="timeupdate"></video>
+          <video ref="videoRef" :src="projectMeta.filePath" class="w-full h-full object-contain"
+            @loadedmetadata="onLoadedmetadata" @timeupdate="timeupdate"></video>
           <!-- <video ref="videoRef" src="D:\Users\qingkong\Videos\Captures\枫丹.mp4" class="w-full h-full object-contain"
             @loadedmetadata="onLoadedmetadata" @timeupdate="timeupdate"></video> -->
         </div>
         <div v-if="isLoadVideoMeta" class="flex h-[40px] items-center px-10">
           <div class="flex items-center">
-            <TimeInput :value="videoMeta.currentTime" @change="changeVideoCurrentTime" />
+            <TimeInput ref="videoTimeRef" :value="videoMeta.currentTime" @change="changeVideoCurrentTime" />
             <span class=" text-gray-400 fs-13 ml-10">{{ videoMeta.durationFmt }}</span>
           </div>
           <div class="flex-1 gap-16 flex justify-center">
@@ -59,17 +59,18 @@
     </div>
     <TimeLine v-if="isLoadVideoMeta" :thumbnails="thumbnailsSorted" :set-current-time="setCurrentTime" />
     <div v-if="isLoadVideoMeta" class=" text-gray-400 fs-13 h-30 flex items-center px-10">
-      <Icon name="video" size="16" color="#9ca3af" /><span>{{ filePath }}</span>
+      <Icon name="video" size="16" color="#9ca3af" /><span>{{ projectMeta.filePath }}</span>
     </div>
     <Modal v-model:open="showConfirm" title="提示" centered @ok="handleOk">
       <div>替换当前文件吗？</div>
     </Modal>
+
   </ConfigProvider>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import TimeLine from '@/components/TimeLine.vue'
-import FileLoader from './components/FileLoader.vue'
+import StartPage from './components/StartPage.vue'
 import { fmtDuration, fmtSeconds } from '@/util'
 import { renderThumbnails, queryKeyFrames } from '@/util/ffmpeg'
 import { sortBy } from 'lodash'
@@ -78,20 +79,24 @@ import { bindKeyboard } from '@/util/keyboard'
 import TimeInput from './components/TimeInput.vue'
 import SegmentList from './components/SegmentList.vue'
 import { useStore } from '@/util/store'
-import { Tooltip, ConfigProvider, message, Spin, Modal } from 'ant-design-vue';
+import { Tooltip, ConfigProvider, message, Modal, Button } from 'ant-design-vue';
 import { storeToRefs } from 'pinia'
 import Icon from './components/Icon.vue'
 import { useDrop } from '@/composables'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 
+const { os } = window.IPC
+
 const store = useStore()
-const { filePath, isFileOpened, isPlaying, commandTime, keyFrames } = storeToRefs(store)
+const { isFileOpened, isPlaying, commandTime, keyFrames } = storeToRefs(store)
 const videoMeta = store.videoMeta
 const segmentList = store.segmentList
 const thumbnails = store.thumbnails
+const projectMeta = store.projectMeta
 
 const videoRef = ref<HTMLVideoElement>(null as unknown as HTMLVideoElement)
 const isLoadVideoMeta = ref(false)
+const videoTimeRef = ref()
 
 const theme = {
   token: {
@@ -99,6 +104,9 @@ const theme = {
     wireframe: true,
   }
 }
+const modal = reactive({
+  exportComplete: false,
+})
 
 const play = () => {
   videoRef.value.play()
@@ -141,7 +149,6 @@ const setCurrentTime = (currentTime: number) => {
 const showThumbnail = () => {
   thumbnails.length = 0
   renderThumbnails({
-    filePath: filePath.value,
     from: 0,
     duration: videoMeta.duration,
     onThumbnail: (payload: { time: number, url: string }) => {
@@ -151,8 +158,6 @@ const showThumbnail = () => {
     console.error('Failed to render thumbnail', err);
   })
 }
-
-const currentTime = computed(() => fmtDuration(videoMeta.currentTime))
 
 const thumbnailsSorted = computed(() => sortBy(thumbnails, (thumbnail: { time: number }) => thumbnail.time))
 
@@ -175,7 +180,6 @@ const nextKeyFrame = () => {
 }
 const setKeyFrames = async () => {
   const newKeyFrames = await queryKeyFrames({
-    filePath: filePath.value,
     duration: videoMeta.duration,
   })
   // 去重加排序
@@ -183,12 +187,15 @@ const setKeyFrames = async () => {
   keyFrames.value.sort((a, b) => a - b)
 }
 
-const onFileLoad = (files: FileList) => {
+const onFileLoad = async (files: FileList) => {
   if (files.length === 0) return
   // @ts-ignore
-  filePath.value = files[0].path
-  console.log(filePath.value);
+  projectMeta.filePath = files[0].path
+  console.log(projectMeta.filePath);
   isFileOpened.value = true
+  const { name, dir } = await os.getFileMeta(projectMeta.filePath)
+  projectMeta.fileName = name
+  projectMeta.outDir = dir
 }
 
 const addSegment = () => {
@@ -238,6 +245,10 @@ const keyboardActions: IKeyboardActions = {
 bindKeyboard(keyboardActions)
 
 const changeVideoCurrentTime = (time: number) => {
+  if (time < 0 || time > videoMeta.duration) {
+    videoTimeRef.value.reset()
+    return
+  }
   setCurrentTime(time)
   commandTime.value = time
 }

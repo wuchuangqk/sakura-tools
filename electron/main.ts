@@ -51,14 +51,14 @@ async function createWindow() {
     title: 'Main window',
     icon: join(process.env.VITE_PUBLIC, 'app.ico'),
     darkTheme: true,
-    width: Math.floor(width * 0.8), // 宽高必须是整数
-    height: Math.floor(height * 0.8),
+    width: Math.floor(width * 0.9), // 宽高必须是整数
+    height: Math.floor(height * 0.9),
     webPreferences: {
       preload,
       webSecurity: !isDev, // fix: Not allowed to load local resource
     },
   })
-  win.maximize() // 窗口最大化
+  // win.maximize() // 窗口最大化
 
   if (isDev) { // electron-vite-vue#298
     win.loadURL(url)

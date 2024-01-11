@@ -7,7 +7,8 @@ contextBridge.exposeInMainWorld('IPC', {
   },
   os: {
     getFileMeta: (filePath) => ipcRenderer.invoke('os:getFileMeta', filePath),
-    createTxt: (outPathList: string[], dir) => ipcRenderer.invoke('os:createTxt', outPathList, dir),
+    createTxtFile: (outPathList: string[], dir) => ipcRenderer.invoke('os:createTxtFile', outPathList, dir),
     removeFile: (pathList: string[]) => ipcRenderer.invoke('os:removeFile', pathList),
+    openDir: (dirPath) => ipcRenderer.invoke('os:openDir', dirPath),
   }
 })

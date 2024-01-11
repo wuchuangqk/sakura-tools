@@ -17,7 +17,8 @@ export class Segment {
   constructor(start: number = 0, end: number = 0) {
     const store = useStore()
     duration = store.videoMeta.duration
-    filePath = store.filePath
+    filePath = store.projectMeta.filePath
+
     this.start = start
     this.end = end
     this.left = Decimal.div(this.start, duration).mul(100) + '%'
