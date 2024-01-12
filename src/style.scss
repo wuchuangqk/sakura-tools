@@ -19,11 +19,6 @@ body,
   overflow: hidden;
 }
 
-#app {
-  display: flex;
-  flex-direction: column;
-}
-
 // 滚动条整体部分
 ::-webkit-scrollbar {
   width: 12px; // 竖向滚动条

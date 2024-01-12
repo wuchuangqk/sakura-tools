@@ -1,9 +1,9 @@
 import pMap from 'p-map';
 import Decimal from 'decimal.js'
 import { Segment } from './Segment';
-import { useStore } from './store';
+import { useVideoStore } from '@/store/video';
 
-const { ffmpeg, os } = window.IPC
+const { invoke } = window
 const THUMBNAIL_MAX = 10 // 缩略图上限
 
 /**
@@ -23,7 +23,8 @@ export const renderThumbnail = async (filePath: string, timestamp: number) => {
     '-'
   ];
   // 输出图片
-  const stdout = await ffmpeg.run(args, 'ffmpeg', { encoding: "buffer" });
+
+  const stdout = await invoke<Buffer>('ffmpeg:run', args, 'ffmpeg', { encoding: "buffer" })
   const blob = new Blob([stdout], { type: 'image/jpeg' });
   return URL.createObjectURL(blob);
 }
@@ -32,7 +33,7 @@ export const renderThumbnail = async (filePath: string, timestamp: number) => {
  * 批量渲染缩略图
  */
 export const renderThumbnails = async ({ from, duration, onThumbnail }: { from: number, duration: number, onThumbnail: Function }) => {
-  const { filePath } = useStore().projectMeta
+  const { filePath } = useVideoStore().projectMeta
   const thumbTimes = Array(THUMBNAIL_MAX).fill(null).map((unused, i) => from + (duration * i / THUMBNAIL_MAX));
   console.log('缩略图时间点：', thumbTimes);
 
@@ -44,7 +45,7 @@ export const renderThumbnails = async ({ from, duration, onThumbnail }: { from: 
 }
 
 export const queryKeyFrames = async ({ duration }: { duration: number }) => {
-  const { filePath } = useStore().projectMeta
+  const { filePath } = useVideoStore().projectMeta
   const args = [
     '-v', 'error',
     '-read_intervals', `0%20`,
@@ -54,7 +55,7 @@ export const queryKeyFrames = async ({ duration }: { duration: number }) => {
     '-of', 'json',
     `"${filePath}"`
   ]
-  const stdout = await ffmpeg.run(args, 'ffprobe') as string;
+  const stdout = await invoke<string>('ffmpeg:run', args, 'ffprobe');
 
   // 筛选关键帧
   const { packets } = JSON.parse(stdout)
@@ -102,7 +103,7 @@ export const cutVideo1 = async ({ filePath, from, duration }: { filePath: string
     '-y',
     outPath,
   ]
-  await ffmpeg.run(args)
+  await invoke('ffmpeg:run', args)
 }
 
 const getOutPath = (filePath: string) => {
@@ -121,7 +122,7 @@ const cutVideo = async ({ filePath, outPath, from, duration }: { filePath: strin
     '-acodec', 'copy',
     `"${outPath}"`,
   ]
-  await ffmpeg.run(args)
+  await invoke('ffmpeg:run', args)
 }
 
 const mergeVideo = async (outPath: string, fileListPath: string) => {
@@ -133,11 +134,11 @@ const mergeVideo = async (outPath: string, fileListPath: string) => {
     '-c', 'copy',
     outPath,
   ]
-  await ffmpeg.run(args)
+  await invoke('ffmpeg:run', args)
 }
 
 export const cutAndMergeVideo = async (segmentList: Segment[]) => {
-  const { filePath, outDir } = useStore().projectMeta
+  const { filePath, outDir } = useVideoStore().projectMeta
 
   // 分割并记录输出文件路径
   const outPathList: string[] = []
@@ -147,7 +148,7 @@ export const cutAndMergeVideo = async (segmentList: Segment[]) => {
     return cutVideo({ filePath, outPath, from: seg.start, duration: Decimal.sub(seg.end, seg.start).toNumber() })
   })
   await Promise.all(tasks)
-  await os.createTxtFile(outPathList.map(path => `file 'file:${path}'`), outDir)
+  await invoke('os:createTxtFile', outPathList.map(path => `file 'file:${path}'`), outDir)
 
   // 合并
   const outPath = getOutPath(filePath)
@@ -155,5 +156,5 @@ export const cutAndMergeVideo = async (segmentList: Segment[]) => {
   await mergeVideo(outPath, fileListPath)
 
   // 删除临时文件
-  os.removeFile([fileListPath, ...outPathList])
+  invoke('os:removeFile', [fileListPath, ...outPathList])
 }

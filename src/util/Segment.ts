@@ -1,7 +1,7 @@
 import Decimal from "decimal.js"
 import { renderThumbnail } from './ffmpeg'
 import { debounce } from 'lodash'
-import { useStore } from '@/util/store'
+import { useVideoStore } from '@/store/video'
 
 let duration = 0
 let filePath = ''
@@ -12,10 +12,10 @@ export class Segment {
   width: string = '0'
   thumbnail: string = '' // 片段封面
   updateThumbnail: Function
-  key = Symbol()
+  key: symbol
 
   constructor(start: number = 0, end: number = 0) {
-    const store = useStore()
+    const store = useVideoStore()
     duration = store.videoMeta.duration
     filePath = store.projectMeta.filePath
 

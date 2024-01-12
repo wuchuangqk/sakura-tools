@@ -31,12 +31,12 @@ import TimeLinePointer from './TimeLinePointer.vue';
 import { Segment } from '@/util/Segment'
 import { throttle } from 'lodash'
 import Decimal from 'decimal.js';
-import { useStore } from '@/util/store'
+import { useVideoStore } from '@/store/video'
 import { storeToRefs } from 'pinia'
 import ScaleLine from './ScaleLine.vue';
 import { sortBy } from 'lodash'
 
-const store = useStore()
+const store = useVideoStore()
 const { isPlaying, commandTime } = storeToRefs(store)
 const videoMeta = store.videoMeta
 const segmentList = store.segmentList

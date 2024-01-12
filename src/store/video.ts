@@ -1,9 +1,10 @@
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 import { Segment } from '@/util/Segment'
-const { os, app } = window.IPC
 
-export const useStore = defineStore('app', () => {
+const { invoke } = window
+
+export const useVideoStore = defineStore('video', () => {
   const videoMeta = reactive<IVideoMeta>({
     currentTime: 0, // 视频当前时间点（单位：秒）
     duration: 0, // 视频时长（单位：秒）
@@ -39,8 +40,8 @@ export const useStore = defineStore('app', () => {
     keyFrames.value.length = 0
   }
   const init = async () => {
-    appMeta.name = await app.getName()
-    appMeta.version = await app.getVersion()
+    appMeta.name = await invoke<string>('app:getName')
+    appMeta.version = await invoke<string>('app:getVersion')
   }
 
   return {

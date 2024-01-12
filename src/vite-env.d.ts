@@ -5,19 +5,6 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>
   export default component
 }
-interface IFfmpeg {
-  run: (args: any[], cmd?: string, options?: any) => Promise<Buffer | string>,
-}
-interface IOS {
-  getFileMeta: (filePath: string) => Promise<{ name: string, dir: string }>,
-  createTxtFile: (outPathList: string[], dir: string) => Promise<void>,
-  removeFile: (pathList: string[]) => Promise<void>,
-  openDir: (dirPath: string) => Promise<void>,
-}
-interface IApp {
-  getVersion: () => Promise<string>,
-  getName: () => Promise<string>,
-}
 interface IVideoMeta {
   currentTime: number
   duration: number
@@ -43,7 +30,15 @@ interface IStoreAction {
 }
 
 interface IThumbnail {
-  time: number, 
-  url: string, 
+  time: number,
+  url: string,
   timeFmt: string
+}
+
+interface IImg {
+  path: string,
+  compressedImg: string,
+  originSize: number,
+  compressedSize: number,
+  loading: boolean,
 }

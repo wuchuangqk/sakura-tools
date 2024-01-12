@@ -11,13 +11,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import appImg from '@/assets/app.ico'
-import { useStore } from '@/util/store'
+import { useVideoStore } from '@/store/video'
 
 const call = defineEmits<{
   load: [files: FileList]
 }>()
 
-const store = useStore()
+const store = useVideoStore()
 const appMeta = store.appMeta
 
 const inputRef = ref(null as unknown as HTMLInputElement)

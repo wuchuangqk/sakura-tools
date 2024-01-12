@@ -5,6 +5,7 @@ export interface IIPC {
 }
 declare global {
   interface Window {
-    IPC: IIPC
+    IPC: IIPC,
+    invoke: <T>(channel: string, ...args: any) => Promise<T>
   }
 }

@@ -1,8 +1,8 @@
-import { useStore } from "@/util/store"
+import { useVideoStore } from "@/store/video"
 import { onMounted, onUnmounted, ref } from "vue"
 
 export const useDrop = (onFileLoad: (files: FileList) => void) => {
-  const store = useStore()
+  const store = useVideoStore()
   const showConfirm = ref(false)
   let filesTemp: any
 

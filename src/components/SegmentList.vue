@@ -46,16 +46,16 @@
 <script setup lang="ts">
 import TimeInput from './TimeInput.vue';
 import { message, Button, Modal } from 'ant-design-vue';
-import { useStore } from '@/util/store'
+import { useVideoStore } from '@/store/video'
 import { reactive, ref } from 'vue';
 import { cutAndMergeVideo } from '@/util/ffmpeg'
 import { Performance } from '@/util/Performance'
 
 const call = defineEmits(['remove'])
 
-const { os } = window.IPC
+const { invoke } = window
 
-const store = useStore()
+const store = useVideoStore()
 const segmentList = store.segmentList
 const projectMeta = store.projectMeta
 const { setCurrentTime } = store.action
@@ -115,7 +115,7 @@ const exportVideo = async () => {
 }
 const openOutDir = () => {
   modal.exportComplete = false
-  os.openDir(projectMeta.outDir)
+  invoke('os:openDir', projectMeta.outDir)
 }
 </script>
 
