@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { createPinia } from "pinia";
 import 'virtual:svg-icons-register'
-import { Tooltip, ConfigProvider, Modal, Button } from 'ant-design-vue';
+import { Tooltip, ConfigProvider, Modal, Button, Spin, Card } from 'ant-design-vue';
 import './style.scss'
 import Icon from '@/components/Icon.vue'
 import { router } from '@/router'
@@ -14,5 +14,7 @@ app.component('ConfigProvider', ConfigProvider)
 app.component('Modal', Modal)
 app.component('Button', Button)
 app.component('Icon', Icon)
+app.component('Spin', Spin)
+app.component('Card', Card)
 app.use(router)
 app.mount('#app')

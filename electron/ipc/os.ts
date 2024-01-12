@@ -1,5 +1,5 @@
 import path from 'node:path'
-import fs from 'node:fs'
+import fs from 'fs-extra'
 import { exec } from 'node:child_process'
 
 /**
@@ -10,7 +10,8 @@ import { exec } from 'node:child_process'
 const getFileMeta = (filePath: string) => {
   return {
     name: path.basename(filePath),
-    dir: path.dirname(filePath)
+    dir: path.dirname(filePath),
+    size: fs.statSync(filePath).size
   }
 }
 

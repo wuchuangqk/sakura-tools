@@ -4,9 +4,12 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import initIpcClient from './ipc/index'
 import { isDev } from './util'
+import compress from './ipc/compress'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+
+compress.clearTempDir()
 
 // The built directory structure
 //

@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import ffmpeg from './ffmpeg'
 import os from './os'
 import app from './app'
+import compress from './compress'
 
 // ipc events
 const initIpcClient = () => {
@@ -14,6 +15,9 @@ const initIpcClient = () => {
 
   ipcMain.handle('app:getName', (e) => app.getName())
   ipcMain.handle('app:getVersion', (e) => app.getVersion())
+
+  ipcMain.handle('compress:run', (e, filePath: string, extension: string) => compress.run(filePath, extension))
+  ipcMain.handle('compress:clearTempDir', (e) => compress.clearTempDir())
 }
 
 export default initIpcClient

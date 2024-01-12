@@ -1,20 +1,34 @@
-import { onMounted, onUnmounted } from "vue"
-import { emitter } from '@/util'
-import C from '@/util/const'
+import { useVideoStore } from "@/store/video"
+import { onMounted, onUnmounted, ref } from "vue"
 
-export const useDrop = () => {
+export const useDrop = (onFileLoad: (files: FileList) => void) => {
+  const store = useVideoStore()
+  const showConfirm = ref(false)
+  let filesTemp: any
+
   // 拖拽上传
   const drop = (event: DragEvent) => {
     event.preventDefault()
     if (event.dataTransfer === null) return
     const { files } = event.dataTransfer
-    if (files.length) {
-      emitter.emit(C.USER_DROP_FILE, files)
+    // @todo 检查文件类型是不是视频
+    // call('load', files)
+    // 
+    if (!store.isFileOpened) {
+      onFileLoad(files)
+      return
     }
+    filesTemp = files
+    showConfirm.value = true
   }
   // 阻止默认事件，使得元素能够接收 drop 事件
   const preventDefault = (event: DragEvent) => {
     event.preventDefault()
+  }
+  const handleOk = () => {
+    showConfirm.value = false
+    store.reset()
+    onFileLoad(filesTemp)
   }
   onMounted(() => {
     document.body.addEventListener('drop', drop)
@@ -24,4 +38,8 @@ export const useDrop = () => {
     document.body.removeEventListener('drop', drop)
     document.body.removeEventListener('dragover', preventDefault)
   })
+  return {
+    showConfirm,
+    handleOk,
+  }
 }

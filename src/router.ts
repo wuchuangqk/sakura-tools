@@ -4,14 +4,16 @@ import type { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/video'
+    redirect: '/img'
   },
   {
     path: '/video',
+    name: 'video',
     component: () => import('@/modules/video-cut.vue')
   },
   {
     path: '/img',
+    name: 'img',
     component: () => import('@/modules/img-compress.vue')
   }
 ]

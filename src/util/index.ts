@@ -1,4 +1,5 @@
 import { padStart } from 'lodash'
+import mitt from 'mitt'
 
 /**
  * 格式化视频时长
@@ -63,7 +64,7 @@ export const reverseToSecond = (time: string) => {
  * 取平均中位数
  */
 export const getAvgNums = (arr: number[], max: number) => {
-  function center(result: {index: number, value: number}[]) {
+  function center(result: { index: number, value: number }[]) {
     if (result.length === 0) {
       result = [
         { index: 0, value: arr[0] },
@@ -89,4 +90,25 @@ export const getAvgNums = (arr: number[], max: number) => {
   }
   const result = center([])
   return result.map(v => v.value)
+}
+
+export const fmtFileSize = (bytes: number) => {
+  if (bytes == 0) return "0 Bytes";
+  let k = 1024,
+    sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
+    i = Math.floor(Math.log(bytes) / Math.log(k));
+  return (
+    parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  );
+}
+
+export const emitter = mitt();
+
+export const getFileExtension = (filePath: string) => {
+  const aliasMap: any = {
+    'jpeg': 'jpg',
+  }
+  if (!filePath) return ''
+  const extension = filePath.substring(filePath.lastIndexOf('.') + 1).toLowerCase()
+  return aliasMap[extension] || extension
 }

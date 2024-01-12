@@ -74,10 +74,10 @@
   </div>
 </template>
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import TimeLine from '@/components/TimeLine.vue'
 import StartPage from '@/components/StartPage.vue'
-import { fmtDuration, fmtSeconds } from '@/util'
+import { emitter, fmtDuration, fmtSeconds } from '@/util'
 import { renderThumbnails, queryKeyFrames } from '@/util/ffmpeg'
 import { Segment } from '@/util/Segment'
 import { bindKeyboard } from '@/util/keyboard'
@@ -85,8 +85,9 @@ import TimeInput from '@/components/TimeInput.vue'
 import SegmentList from '@/components/SegmentList.vue'
 import { useVideoStore } from '@/store/video'
 import { storeToRefs } from 'pinia'
-import { useDrop } from '@/composables'
+import { useModule } from '@/composables'
 import { message } from 'ant-design-vue';
+import C from '@/util/const'
 
 const { invoke } = window
 
@@ -103,6 +104,8 @@ const videoRef = ref<HTMLVideoElement>(null as unknown as HTMLVideoElement)
 const isLoadVideoMeta = ref(false)
 const videoTimeRef = ref()
 
+const { isModuleActive } = useModule(C.VIDEO_MODULE)
+
 const theme = {
   token: {
     borderRadius: 2,
@@ -112,6 +115,8 @@ const theme = {
 const modal = reactive({
   exportComplete: false,
 })
+const showConfirm = ref(false)
+let filesTemp: any
 
 const play = () => {
   videoRef.value.play()
@@ -199,7 +204,7 @@ const onFileLoad = async (files: FileList) => {
   projectMeta.filePath = files[0].path
   console.log(projectMeta.filePath);
   isFileOpened.value = true
-  const { name, dir } = await invoke<{ name: string, dir: string }>('os:getFileMeta', projectMeta.filePath)
+  const { name, dir } = await invoke<IFileMeta>('os:getFileMeta', projectMeta.filePath)
   projectMeta.fileName = name
   projectMeta.outDir = dir
 }
@@ -259,9 +264,30 @@ const changeVideoCurrentTime = (time: number) => {
   commandTime.value = time
 }
 
-const { showConfirm, handleOk } = useDrop(onFileLoad)
+const handleOk = () => {
+  showConfirm.value = false
+  store.reset()
+  onFileLoad(filesTemp)
+}
+const drop = (files: FileList) => {
+  console.log('isModuleActive', isModuleActive.value, C.VIDEO_MODULE);
+  if (!isModuleActive.value) return
+  if (!isFileOpened.value) {
+    onFileLoad(files)
+    return
+  }
+  showConfirm.value = true
+  filesTemp = files
+}
 
 store.action.setCurrentTime = setCurrentTime
+
+onMounted(() => {
+  emitter.on('USER_DROP_FILE', drop as any)
+})
+onUnmounted(() => {
+  emitter.off('USER_DROP_FILE', drop as any)
+})
 </script>
 <style scoped>
 .logo {

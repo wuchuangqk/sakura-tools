@@ -15,19 +15,14 @@
 <script setup lang="ts">
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import Menu from '@/components/Menu.vue'
-import {Segment} from '@/util/Segment'
+import { useDrop } from '@/composables'
 
-const a = new Segment(1,2)
-const b = new Segment(1,2)
-console.log(a.key, b.key, a.key === b.key);
-const c = Symbol()
-const d = Symbol()
-console.log(c, d, c === d);
 const theme = {
   token: {
     borderRadius: 2,
     wireframe: true,
   }
 }
+useDrop()
 </script>
 <style scoped lang="scss"></style>

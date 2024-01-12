@@ -1,23 +1,22 @@
 
 <template>
   <div>
-    <Menu v-model:selectedKeys="state.selectedKeys" mode="horizontal" theme="dark" :items="items" @click="onClick"></Menu>
+    <Menu v-model:selectedKeys="selectedKeys" mode="horizontal" theme="dark" :items="items" @click="onClick"></Menu>
   </div>
 </template>
 <script setup lang="ts">
-import { reactive, h } from 'vue'
+import { reactive, h, watch } from 'vue'
 import {
   PieChartOutlined,
   DesktopOutlined,
 } from '@ant-design/icons-vue';
 import { Menu } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
-const state = reactive({
-  selectedKeys: ['/video'],
-});
+const selectedKeys = reactive(['/video'])
 const items = reactive([
   {
     key: '/video',
@@ -33,6 +32,9 @@ const items = reactive([
 const onClick = ({ key }: any) => {
   router.push(key)
 }
+watch(() => route.path, () => {
+  selectedKeys[0] = route.path
+})
 </script>
     
 <style lang="scss" scoped></style>

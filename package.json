@@ -1,7 +1,7 @@
 {
   "name": "sakura-cut",
   "productName": "樱花剪辑",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "main": "dist/electron/main.mjs",
   "description": "video and audio editing software",
   "author": "wuchuangqk",
@@ -42,10 +42,13 @@
   "dependencies": {
     "ant-design-vue": "4.x",
     "decimal.js": "^10.4.3",
+    "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
+    "mitt": "^3.0.1",
     "mousetrap": "^1.6.5",
     "p-map": "^7.0.1",
     "pinia": "^2.1.7",
+    "uuid": "^9.0.1",
     "vue-router": "^4.2.5"
   }
 }

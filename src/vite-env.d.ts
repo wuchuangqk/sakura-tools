@@ -42,3 +42,9 @@ interface IImg {
   compressedSize: number,
   loading: boolean,
 }
+
+interface IFileMeta {
+  name: string, 
+  dir: string,
+  size: number
+}
