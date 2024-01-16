@@ -18,6 +18,7 @@ const initIpcClient = () => {
 
   ipcMain.handle('compress:run', (e, filePath: string, extension: string) => compress.run(filePath, extension))
   ipcMain.handle('compress:clearTempDir', (e) => compress.clearTempDir())
+  ipcMain.handle('compress:save', (e, payload) => compress.save(payload))
 }
 
 export default initIpcClient
