@@ -1,17 +1,22 @@
 <template>
-  <Spin :spinning="img.loading" :indicator="indicator" tip="正在压缩">
-    <div class="w-[200px] bg-[#313131] rounded-md" :class="{ selected }" @click="call('click')">
-      <div class="h-[160px]">
+  <Spin :spinning="!img.loading" :indicator="indicator" tip="正在压缩">
+    <div class="w-[180px] bg-[#313131] rounded-md img-card overflow-hidden border border-[var(--divider)] relative"
+      :class="{ selected }" @click="call('click')">
+      <div class="h-[150px]">
         <img :src="img.path" alt="" class="w-full h-full object-cover">
       </div>
-      <div class="flex justify-between items-baseline text-gray-300 my-16 px-10">
+      <div class="flex justify-between items-baseline text-gray-300 mt-10 px-10">
         <span :class="[diff.better ? 'text-green-600' : 'text-red-600', 'text-lg']">{{ diff.percent }}</span>
         <span class="fs-13">
           <span>{{ compressedSize }}</span>
           <span class=" text-gray-400">/{{ originSize }}</span>
         </span>
       </div>
-      <div class="flex border-t border-gray-700 h-32">
+      <div v-if="img.extension === 'jpg'" class="flex fs-13 items-center gap-10 text-gray-400 px-10">
+        <span>质量</span>
+        <Slider v-model:value="img.quality" :min="10" :max="90" class="flex-1" @afterChange="changeQuality" />
+      </div>
+      <div class="flex border-t border-[var(--divider2)] h-32">
         <div class="flex-1 flex items-center justify-center">
           <Tooltip>
             <template #title>
@@ -20,7 +25,7 @@
             <Icon name="save" size="16" @click="save" />
           </Tooltip>
         </div>
-        <div class="flex-1 flex items-center justify-center border-x border-gray-700">
+        <div class="flex-1 flex items-center justify-center border-x border-[var(--divider2)]">
           <Tooltip>
             <template #title>
               <div class="fs-13">另存为</div>
@@ -37,6 +42,7 @@
           </Tooltip>
         </div>
       </div>
+      <div v-if="selected" class="status">预览中</div>
     </div>
   </Spin>
 </template>
@@ -80,6 +86,10 @@ const diff = computed(() => {
   }
 })
 
+const changeQuality = () => {
+  props.img.compress()
+}
+
 const save = () => {
   call('action', 'save')
 }
@@ -98,6 +108,23 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .selected {
-  border: 1px solid red;
+  border-color: #626dff;
+}
+
+.img-card {
+  &:hover {
+    box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.16), 0 3px 6px 0 rgba(0, 0, 0, 0.12), 0 5px 12px 4px rgba(0, 0, 0, 0.09);
+  }
+}
+
+.status {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: #fff;
+  background-color: #626dff;
+  font-size: 12px;
 }
 </style>

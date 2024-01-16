@@ -15,12 +15,12 @@ interface ISave {
 
 const tmpdir = resolve(os.tmpdir(), 'sakura') // 系统临时文件目录（C:\Users\wuchu\AppData\Local\Temp）
 
-const commandMap = (type: string, input, output) => {
+const commandMap = (type: string, input, output, quality) => {
   const map = {
     'jpg': {
       bin: 'moz-cjpeg',
       args: [
-        '-quality', '80',
+        '-quality', `'${quality}'`,
         '-outfile', output,
         `"${input}"`,
       ]
@@ -37,7 +37,7 @@ const commandMap = (type: string, input, output) => {
     'webp': {
       bin: 'cwebp',
       args: [
-        '-q', '80',
+        '-q', `'${quality}'`,
         `"${input}"`,
         '-o', output,
       ]
@@ -46,15 +46,15 @@ const commandMap = (type: string, input, output) => {
   return map[type]
 }
 
-const run = async (filePath: string, extension: string) => {
+const run = async ({ filePath, extension, quality }: { filePath: string, extension: string, quality: number }) => {
   if (!['jpg', 'png', 'webp'].includes(extension)) {
     return Promise.reject()
   }
   const output = resolve(tmpdir, `${uuidv4()}.${extension}`)
   console.log('output', output);
-  
+
   return new Promise((resolve, reject) => {
-    const { bin, args } = commandMap(extension, filePath, output)
+    const { bin, args } = commandMap(extension, filePath, output, quality)
     const binPath = getBinPath('compress', bin)
     const process = exec(`${binPath} ${args.join(' ')}`, (err) => {
       if (err) return reject(err)
@@ -78,7 +78,7 @@ const clearTempDir = () => emptyDirSync(tmpdir)
 
 const save = async ({ imgList, saveType }: ISave) => {
   console.log(imgList, saveType);
-  
+
   if (saveType === SaveType.OVERWRITE) {
     imgList.forEach(({ compressedPath, originPath }) => {
       copyToTarget(compressedPath, originPath)
@@ -105,6 +105,7 @@ const save = async ({ imgList, saveType }: ISave) => {
 }
 
 export default {
+  tmpdir,
   run,
   clearTempDir,
   save,

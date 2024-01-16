@@ -6,8 +6,10 @@
     <div class=" absolute top-0 bottom-0 w-full h-full overflow-hidden" :style="{ left: imgLayoutLeft + '%' }">
       <img v-if="after" :src="after" alt="" class="img absolute" :style="{ left: (-imgLayoutLeft) + '%' }">
     </div>
-    <div ref="handleRef" class="w-6 bg-white/50 absolute top-0 bottom-0 cursor-e-resize" :style="{ left: handleLeftFmt }"
-      @mousedown="onMouseDown">
+    <div ref="handleRef" class="w-2 bg-white/80 absolute top-0 bottom-0 cursor-e-resize handler"
+      :style="{ left: handleLeftFmt }" @mousedown="onMouseDown">
+      <div class=" absolute tag -left-60">原图</div>
+      <div class=" absolute tag left-10">压缩后</div>
     </div>
   </div>
 </template>
@@ -87,5 +89,24 @@ onUnmounted(() => {
   object-fit: cover;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+.handler {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 1);
+}
+
+.tag {
+  background: rgba(223, 226, 255, 0.1);
+  border: 1px solid rgba(223, 226, 255, 0.5);
+  backdrop-filter: blur(5px);
+  border-radius: 100px;
+  color: #FFFFFF;
+  font-size: 10px;
+  top: 50px;
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
 }
 </style>

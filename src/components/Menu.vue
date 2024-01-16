@@ -1,8 +1,6 @@
 
 <template>
-  <div>
-    <Menu v-model:selectedKeys="selectedKeys" mode="horizontal" theme="dark" :items="items" @click="onClick"></Menu>
-  </div>
+  <Menu v-model:selectedKeys="selectedKeys" inlineCollapsed theme="dark" :items="items" @click="onClick"></Menu>
 </template>
 <script setup lang="ts">
 import { reactive, h, watch } from 'vue'

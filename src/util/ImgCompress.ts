@@ -1,5 +1,9 @@
 import { getFileExtension } from './index'
-import { compress as compressImg } from './compress'
+
+interface ICompress {
+  compressedImg: string
+  compressedSize: number
+}
 
 const { invoke } = window
 
@@ -10,20 +14,11 @@ export class ImgCompress {
   compressedSize: number = 0
   loading: boolean = true
   extension: string
+  quality: number = 80
 
   constructor(path: string) {
     this.path = path
     this.extension = getFileExtension(this.path)
-  }
-
-  // 覆盖保存
-  save() {
-
-  }
-
-  // 另存为
-  saveAs() {
-
   }
 
   async setSize() {
@@ -32,7 +27,12 @@ export class ImgCompress {
   }
 
   async compress() {
-    const { compressedImg, compressedSize } = await compressImg(this.path, this.extension)
+    this.loading = true
+    const { compressedImg, compressedSize } = await invoke<ICompress>('compress:run', {
+      filePath: this.path,
+      extension: this.extension,
+      quality: this.quality
+    })
     this.compressedImg = compressedImg
     this.compressedSize = compressedSize
     this.loading = false
