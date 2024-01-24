@@ -61,7 +61,7 @@ const modal = reactive({
 const tempDir = ref('')
 
 const setPreview = (index: number) => {
-  if (imgs[index].loading) return
+  if (!imgs[index].compressed) return
   selected.value = index
 }
 // 拖拽上传
@@ -93,7 +93,7 @@ const saveAll = async (saveType: SaveType) => {
 const dispatchSave = async (imgs: ImgCompress[], saveType: SaveType) => {
   try {
     const imgList = imgs
-      .filter(img => !img.loading)
+      .filter(img => img.compressed)
       .map(img => ({
         originPath: img.path,
         compressedPath: img.compressedImg,
@@ -134,15 +134,15 @@ const openTempDir = () => {
 }
 
 const processCount = computed(() => {
-  return imgs.filter(img => img.loading).length
+  return imgs.filter(img => !img.compressed).length
 })
 const completeCount = computed(() => {
-  return imgs.filter(img => !img.loading).length
+  return imgs.filter(img => img.compressed).length
 })
 
 watch(imgs, () => {
   if (selected.value === -1) {
-    const firstImg = imgs.findIndex(img => !img.loading)
+    const firstImg = imgs.findIndex(img => img.compressed)
     if (firstImg !== -1) {
       selected.value = firstImg
     }

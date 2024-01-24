@@ -6,12 +6,12 @@ import { useVideoStore } from '@/store/video'
 let duration = 0
 let filePath = ''
 export class Segment {
-  start: number
-  end: number
-  left: string = '0'
-  width: string = '0'
+  start: number // 开始时间点
+  end: number // 结束时间点
+  left: string // 距离时间轴起点的距离
+  width: string // 在时间轴上的长度
   thumbnail: string = '' // 片段封面
-  updateThumbnail: Function
+  updateThumbnail: Function // 更新片段封面
   key: symbol
 
   constructor(start: number = 0, end: number = 0) {
@@ -23,11 +23,14 @@ export class Segment {
     this.end = end
     this.left = Decimal.div(this.start, duration).mul(100) + '%'
     this.width = Decimal.sub(this.end, this.start).div(duration).mul(100) + '%'
-    this.thumbnail = ''
     this.key = Symbol()
     this.updateThumbnail = debounce(this.createThumbnail, 600)
   }
 
+  /**
+   * 设置片段起点
+   * @param start 
+   */
   setStart(start: number) {
     const _start = this.start
     this.start = start
@@ -39,6 +42,10 @@ export class Segment {
     }
   }
 
+  /**
+   * 设置片段终点
+   * @param end 
+   */
   setEnd(end: number) {
     const _end = this.end
     this.end = end
@@ -48,6 +55,9 @@ export class Segment {
     }
   }
 
+  /**
+   * 生成缩略图
+   */
   async createThumbnail() {
     const url = await renderThumbnail(filePath, this.start)
     this.thumbnail = url

@@ -28,10 +28,9 @@ const commandMap = (type: string, input, output, quality) => {
     'png': {
       bin: 'pngquant',
       args: [
-        '"256"',
+        '256',
         `"${input}"`,
-        '-o',
-        output,
+        '--output', output,
       ]
     },
     'webp': {
@@ -57,7 +56,10 @@ const run = async ({ filePath, extension, quality }: { filePath: string, extensi
     const { bin, args } = commandMap(extension, filePath, output, quality)
     const binPath = getBinPath('compress', bin)
     const process = exec(`${binPath} ${args.join(' ')}`, (err) => {
-      if (err) return reject(err)
+      if (err) {
+        console.log(err);
+        return reject(err)
+      }
     })
     process.on('close', async () => {
       try {
@@ -74,11 +76,10 @@ const run = async ({ filePath, extension, quality }: { filePath: string, extensi
   })
 }
 
+// 清空临时目录
 const clearTempDir = () => emptyDirSync(tmpdir)
 
 const save = async ({ imgList, saveType }: ISave) => {
-  console.log(imgList, saveType);
-
   if (saveType === SaveType.OVERWRITE) {
     imgList.forEach(({ compressedPath, originPath }) => {
       copyToTarget(compressedPath, originPath)

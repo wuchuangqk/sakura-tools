@@ -1,1 +1,0 @@
-const { invoke } = window

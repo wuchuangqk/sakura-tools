@@ -1,5 +1,5 @@
 <template>
-  <Spin :spinning="!img.loading" :indicator="indicator" tip="正在压缩">
+  <Spin :spinning="!img.compressed" :indicator="indicator" tip="正在压缩">
     <div class="w-[180px] bg-[#313131] rounded-md img-card overflow-hidden border border-[var(--divider)] relative"
       :class="{ selected }" @click="call('click')">
       <div class="h-[150px]">
@@ -12,7 +12,7 @@
           <span class=" text-gray-400">/{{ originSize }}</span>
         </span>
       </div>
-      <div v-if="img.extension === 'jpg'" class="flex fs-13 items-center gap-10 text-gray-400 px-10">
+      <div class="flex fs-13 items-center gap-10 text-gray-400 px-10">
         <span>质量</span>
         <Slider v-model:value="img.quality" :min="10" :max="90" class="flex-1" @afterChange="changeQuality" />
       </div>
@@ -87,6 +87,8 @@ const diff = computed(() => {
 })
 
 const changeQuality = () => {
+  console.log('1');
+  
   props.img.compress()
 }
 

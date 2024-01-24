@@ -8,13 +8,13 @@ interface ICompress {
 const { invoke } = window
 
 export class ImgCompress {
-  path: string
-  compressedImg: string = ''
-  originSize: number = 0
-  compressedSize: number = 0
-  loading: boolean = true
-  extension: string
-  quality: number = 80
+  path: string // 图片路径
+  compressedImg: string = '' // 压缩后的图片路径
+  originSize: number = 0 // 图片原始大小
+  compressedSize: number = 0 // 图片压缩后大小
+  compressed: boolean = false // 
+  extension: string // 图片扩展名（jpg,png,webp）
+  quality: number = 80 // 压缩质量（10-100）
 
   constructor(path: string) {
     this.path = path
@@ -27,7 +27,7 @@ export class ImgCompress {
   }
 
   async compress() {
-    this.loading = true
+    this.compressed = false
     const { compressedImg, compressedSize } = await invoke<ICompress>('compress:run', {
       filePath: this.path,
       extension: this.extension,
@@ -35,6 +35,6 @@ export class ImgCompress {
     })
     this.compressedImg = compressedImg
     this.compressedSize = compressedSize
-    this.loading = false
+    this.compressed = true
   }
 }

@@ -40,7 +40,7 @@ interface IImg {
   compressedImg: string,
   originSize: number,
   compressedSize: number,
-  loading: boolean,
+  compressed: boolean,
 }
 
 interface IFileMeta {
