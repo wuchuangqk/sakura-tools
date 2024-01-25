@@ -10,7 +10,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { useVideoStore } from '@/store/video'
+import { useVideoStore } from '@/store'
 import { computed } from 'vue';
 import Decimal from 'decimal.js'
 import { getAvgNums } from '@/util'

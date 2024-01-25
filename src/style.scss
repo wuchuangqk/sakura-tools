@@ -5,9 +5,15 @@
 @tailwind utilities;
 
 :root {
-  --bg: #232323; // 背景颜色
+  --dark1: #333333;
+  --dark2: #313131;
+  --dark3: #232323;
+}
+
+.dark-theme {
+  --bg: var(--dark1); // 背景颜色
   --color: #eee; // 文字颜色
-  --divider: #3b3b3b; // 分割线颜色
+  --divider: #454545; // 分割线颜色
   --divider2: #494949; // 分割线颜色
 }
 
@@ -15,10 +21,10 @@ html,
 body,
 #app {
   height: 100%;
-  background-color: var(--bg);
-  color: var(--color);
   font-size: 14px;
   overflow: hidden;
+  background-color: var(--bg);
+  color: var(--color);
 }
 
 // 滚动条整体部分
@@ -59,6 +65,10 @@ body,
 
 .fs-13 {
   font-size: 13px;
+}
+
+.fs-12 {
+  font-size: 12px;
 }
 
 .ant-btn-primary:disabled {

@@ -28,12 +28,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import TimeLinePointer from './TimeLinePointer.vue';
-import { Segment } from '@/util/Segment'
+import ScaleLine from './ScaleLine.vue';
+import { Segment } from '@/util'
 import { throttle } from 'lodash'
 import Decimal from 'decimal.js';
-import { useVideoStore } from '@/store/video'
+import { useVideoStore } from '@/store'
 import { storeToRefs } from 'pinia'
-import ScaleLine from './ScaleLine.vue';
 import { sortBy } from 'lodash'
 
 const store = useVideoStore()

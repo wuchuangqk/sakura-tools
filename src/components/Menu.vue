@@ -1,6 +1,6 @@
 
 <template>
-  <Menu v-model:selectedKeys="selectedKeys" inlineCollapsed theme="dark" :items="items" @click="onClick"></Menu>
+  <Menu v-model:selectedKeys="selectedKeys" :mode="mode" theme="dark" :items="items" @click="onClick"></Menu>
 </template>
 <script setup lang="ts">
 import { reactive, h, watch } from 'vue'
@@ -27,6 +27,7 @@ const items = reactive([
     label: '图片压缩',
   },
 ]);
+const mode = 'horizontal' // vertical=垂直，horizontal=水平
 const onClick = ({ key }: any) => {
   router.push(key)
 }

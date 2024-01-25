@@ -4,8 +4,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.qk.sakura",
-  "asar": true,
-  "productName": "樱花剪辑",
+  "asar": false,
+  "productName": "樱花工具箱",
   "directories": {
     "output": "release/${version}"
   },
@@ -14,7 +14,7 @@
     "dist/electron"
   ],
   "win": {
-    "target": "zip",
+    "target": "nsis",
     "icon": "./resources/app.ico",
     "extraResources": [
       {
@@ -23,4 +23,12 @@
       }
     ],
   },
+  "nsis": {
+    "oneClick": false, // 一键安装，默认true
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false,
+    "createDesktopShortcut": true, // 桌面快捷方式
+    "createStartMenuShortcut": true, // 开始菜单
+  }
 }

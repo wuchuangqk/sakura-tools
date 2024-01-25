@@ -1,24 +1,47 @@
 <template>
   <div class="h-full flex flex-col overflow-hidden">
     <main class="flex-1 flex overflow-hidden">
-      <aside class="border-r border-[var(--divider)] flex flex-col py-10 pl-10">
-        <div class="flex text-gray-400 gap-10 pb-10 border-b border-[var(--divider)]">
-          <span>图片总数：{{ imgs.length }}</span>
-          <span>处理中：{{ processCount }}</span>
-          <span>处理完成：<span class=" text-green-600">{{ completeCount }}</span></span>
-        </div>
-        <div class="flex gap-10 my-10">
-          <Button type="primary" :loading="loading" @click="saveAll(SaveType.OVERWRITE)">保存并覆盖</Button>
-          <Button type="primary" :loading="loading" @click="saveAll(SaveType.DUPLICATE)">保存为副本</Button>
-          <Button type="primary" @click="clearWorkSpace">全部清除</Button>
-        </div>
-        <div class="grid grid-cols-2 gap-14 overflow-auto pr-10">
+      <aside v-if="imgs.length" class="border-r border-[var(--divider)] flex flex-col w-[360px]">
+        <header class="flex justify-between items-center text-gray-400 gap-10 p-10 border-b border-[var(--divider)]">
+          <div><span class=" text-green-600">{{ completeCount }}</span>/{{ imgs.length }}</div>
+          <Flex gap="10">
+            <Tooltip>
+              <template #title>
+                <div class="fs-13">添加图片</div>
+              </template>
+              <Icon name="openFold" size="16" @click="open" />
+            </Tooltip>
+            <Tooltip>
+              <template #title>
+                <div class="fs-13">全部保存并覆盖</div>
+              </template>
+              <Icon name="save" size="16" @click="saveAll(SaveType.OVERWRITE)" />
+            </Tooltip>
+            <Tooltip>
+              <template #title>
+                <div class="fs-13">全部保存为副本</div>
+              </template>
+              <Icon name="saveAs" size="16" @click="saveAll(SaveType.DUPLICATE)" />
+            </Tooltip>
+            <Tooltip>
+              <template #title>
+                <div class="fs-13">全部清除</div>
+              </template>
+              <Icon name="del" size="16" @click="clearWorkSpace" />
+            </Tooltip>
+          </Flex>
+        </header>
+        <div class="flex justify-center py-6 fs-12 text-gray-500">拖拽图片到这里继续添加</div>
+        <div class="grid grid-cols-2 gap-14 overflow-auto px-10">
           <ImgCard v-for="(img, index) in imgs" :key="img.path" :img="img" :selected="index === selected"
             @click="setPreview(index)" @action="(type) => onAction(index, type)" />
         </div>
       </aside>
       <section class="flex-1 overflow-hidden">
-        <ImgCompare v-if="selected !== -1" :before="imgs[selected].path" :after="imgs[selected].compressedImg" />
+        <StartPage v-if="imgs.length === 0" @load="drop" />
+        <div class="h-full p-10">
+          <ImgCompare v-if="selected !== -1" :before="imgs[selected].path" :after="imgs[selected].compressedImg" />
+        </div>
       </section>
     </main>
     <footer class="text-gray-400 fs-13 h-30 flex items-center justify-between px-10 border-t border-[var(--divider)]">
@@ -31,6 +54,10 @@
         </Tooltip>
         <span>缓存目录：{{ tempDir }}</span>
       </div>
+      <Flex gap="10">
+        <span>{{ appMeta.name }}</span>
+        <span>{{ appMeta.version }}</span>
+      </Flex>
     </footer>
     <Modal v-model:open="modal.overwrite" title="操作确认" centered @ok="resolve">
       <div>确定要覆盖原文件吗？</div>
@@ -39,19 +66,30 @@
 </template>
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import ImgCompare from '@/components/ImgCompare.vue';
-import ImgCard from '@/components/ImgCard.vue';
-import { emitter } from '@/util'
-import C from '@/util/const'
+import ImgCompare from './components/ImgCompare.vue';
+import ImgCard from './components/ImgCard.vue';
+import StartPage from './components/StartPage.vue';
+import { emitter, C, ImgCompress, getFileExtension } from '@/util'
 import { useModule, usePromise } from '@/composables'
-import { ImgCompress } from '@/util/ImgCompress';
-import { SaveType } from '../../common/types'
+import { SaveType } from '../../../common/types'
 import { message } from 'ant-design-vue';
+import { useVideoStore } from '@/store'
+import { useFileDialog } from '@vueuse/core'
 
 const { invoke } = window
 
+const store = useVideoStore()
+store.init()
+const appMeta = store.appMeta
+
 const { isModuleActive } = useModule(C.IMG_MODULE)
 const { resolve, future } = usePromise()
+const { open, onChange } = useFileDialog({
+  multiple: true,
+  accept: 'image/*',
+  directory: false,
+})
+
 const imgs = reactive<ImgCompress[]>([])
 const selected = ref(-1)
 const loading = ref(false)
@@ -66,13 +104,24 @@ const setPreview = (index: number) => {
 }
 // 拖拽上传
 const drop = (files: FileList) => {
-  console.log('isModuleActive', isModuleActive.value, C.IMG_MODULE);
+  // console.log('isModuleActive', isModuleActive.value, C.IMG_MODULE);
   if (!isModuleActive.value) return
+  let extisNotSupport = false
   for (let i = 0; i < files.length; i++) {
-    // @ts-ignore
-    const img = new ImgCompress(files[i].path)
+    const { name, path } = files[i]
+    if (!isSupport(name)) {
+      extisNotSupport = true
+      continue
+    }
+    const img = new ImgCompress(path)
     imgs.push(img)
   }
+  if (extisNotSupport) {
+    message.error('仅支持jpg、png、webp格式的图片')
+  }
+}
+const isSupport = (name: string) => {
+  return ['jpg', 'png', 'webp'].includes(getFileExtension(name))
 }
 
 const clearWorkSpace = () => {
@@ -133,11 +182,13 @@ const openTempDir = () => {
   invoke('os:openDir', tempDir.value)
 }
 
-const processCount = computed(() => {
-  return imgs.filter(img => !img.compressed).length
-})
 const completeCount = computed(() => {
   return imgs.filter(img => img.compressed).length
+})
+
+onChange((files) => {
+  if (files === null || files.length === 0) return
+  drop(files)
 })
 
 watch(imgs, () => {

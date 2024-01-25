@@ -1,20 +1,25 @@
 <template>
-  <Spin :spinning="!img.compressed" :indicator="indicator" tip="正在压缩">
-    <div class="w-[180px] bg-[#313131] rounded-md img-card overflow-hidden border border-[var(--divider)] relative"
+  <Spin :spinning="img.compressing" :indicator="indicator" tip="正在压缩">
+    <div class=" bg-[#313131] rounded-md img-card overflow-hidden border border-[var(--divider)] relative"
       :class="{ selected }" @click="call('click')">
-      <div class="h-[150px]">
+      <div class="h-[140px] relative">
         <img :src="img.path" alt="" class="w-full h-full object-cover">
+        <div
+          class="flex justify-between items-end absolute bottom-0 left-0 right-0 h-40 px-10 pb-6 img-meta fs-12 text-gray-300">
+          <div>{{ img.extension.toUpperCase() }}</div>
+          <Flex class="fs-12" align="flex-end" gap="4">
+            <Icon name="time" size="14" :border="false" /><span>{{ img.compressed ? img.compresTime : '--' }}秒</span>
+          </Flex>
+        </div>
       </div>
-      <div class="flex justify-between items-baseline text-gray-300 mt-10 px-10">
-        <span :class="[diff.better ? 'text-green-600' : 'text-red-600', 'text-lg']">{{ diff.percent }}</span>
+      <div class="flex justify-between items-baseline text-gray-300 my-10 px-10">
+        <!-- 压缩比 -->
+        <span :class="[diff.better ? 'text-green-600' : 'text-red-600', 'text-lg']">{{ img.compressed ? diff.percent :
+          '--' }}</span>
         <span class="fs-13">
-          <span>{{ compressedSize }}</span>
+          <span>{{ img.compressed ? compressedSize : '--' }}</span>
           <span class=" text-gray-400">/{{ originSize }}</span>
         </span>
-      </div>
-      <div class="flex fs-13 items-center gap-10 text-gray-400 px-10">
-        <span>质量</span>
-        <Slider v-model:value="img.quality" :min="10" :max="90" class="flex-1" @afterChange="changeQuality" />
       </div>
       <div class="flex border-t border-[var(--divider2)] h-32">
         <div class="flex-1 flex items-center justify-center">
@@ -42,7 +47,9 @@
           </Tooltip>
         </div>
       </div>
-      <div v-if="selected" class="status">预览中</div>
+      <!-- 标签 -->
+      <div v-if="selected" class="status preview">预览中</div>
+      <div v-if="img.error" class="status error">压缩失败</div>
     </div>
   </Spin>
 </template>
@@ -86,12 +93,6 @@ const diff = computed(() => {
   }
 })
 
-const changeQuality = () => {
-  console.log('1');
-  
-  props.img.compress()
-}
-
 const save = () => {
   call('action', 'save')
 }
@@ -126,7 +127,18 @@ onMounted(() => {
   border-radius: 4px;
   padding: 4px 8px;
   color: #fff;
-  background-color: #626dff;
   font-size: 12px;
+
+  &.preview {
+    background-color: #626dff;
+  }
+
+  &.error {
+    background-color: #d91010;
+  }
+}
+
+.img-meta {
+  background: linear-gradient(to top, rgb(0 0 0 / 70%), rgb(0 0 0 / 0%));
 }
 </style>

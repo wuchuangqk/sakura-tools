@@ -68,26 +68,22 @@
         <span>{{ appMeta.version }}</span>
       </div>
     </div>
-    <Modal v-model:open="showConfirm" title="提示" centered @ok="handleOk">
+    <Modal v-model:open="modal.replaceProject" title="提示" centered @ok="resolve">
       <div>替换当前文件吗？</div>
     </Modal>
   </div>
 </template>
 <script setup lang="ts">
 import { onMounted, onUnmounted, reactive, ref } from 'vue'
-import TimeLine from '@/components/TimeLine.vue'
-import StartPage from '@/components/StartPage.vue'
-import { emitter, fmtDuration, fmtSeconds } from '@/util'
-import { renderThumbnails, queryKeyFrames } from '@/util/ffmpeg'
-import { Segment } from '@/util/Segment'
-import { bindKeyboard } from '@/util/keyboard'
-import TimeInput from '@/components/TimeInput.vue'
-import SegmentList from '@/components/SegmentList.vue'
-import { useVideoStore } from '@/store/video'
+import TimeLine from './components/TimeLine.vue'
+import StartPage from './components/StartPage.vue'
+import TimeInput from './components/TimeInput.vue'
+import SegmentList from './components/SegmentList.vue'
+import { emitter, fmtDuration, fmtSeconds, renderThumbnails, queryKeyFrames, Segment, bindKeyboard, C } from '@/util'
+import { useVideoStore } from '@/store'
 import { storeToRefs } from 'pinia'
-import { useModule } from '@/composables'
+import { useModule, usePromise } from '@/composables'
 import { message } from 'ant-design-vue';
-import C from '@/util/const'
 
 const { invoke } = window
 
@@ -105,18 +101,12 @@ const isLoadVideoMeta = ref(false)
 const videoTimeRef = ref()
 
 const { isModuleActive } = useModule(C.VIDEO_MODULE)
+const { resolve, future } = usePromise()
 
-const theme = {
-  token: {
-    borderRadius: 2,
-    wireframe: true,
-  }
-}
 const modal = reactive({
-  exportComplete: false,
+  replaceProject: false,
 })
 const showConfirm = ref(false)
-let filesTemp: any
 
 const play = () => {
   videoRef.value.play()
@@ -264,29 +254,29 @@ const changeVideoCurrentTime = (time: number) => {
   commandTime.value = time
 }
 
-const handleOk = () => {
-  showConfirm.value = false
-  store.reset()
-  onFileLoad(filesTemp)
-}
-const drop = (files: FileList) => {
-  console.log('isModuleActive', isModuleActive.value, C.VIDEO_MODULE);
+const drop = async (files: FileList) => {
+  // console.log('isModuleActive', isModuleActive.value, C.VIDEO_MODULE);
   if (!isModuleActive.value) return
+  // 检查mimetype，例如 video/mp4 video/mkv
+  if (!files[0].type.startsWith('video')) return message.error('暂不支持该视频格式')
   if (!isFileOpened.value) {
     onFileLoad(files)
     return
   }
-  showConfirm.value = true
-  filesTemp = files
+  // 询问是否要替换当前视频
+  await future(() => showConfirm.value = true)
+  showConfirm.value = false
+  store.reset()
+  onFileLoad(files)
 }
 
 store.action.setCurrentTime = setCurrentTime
 
 onMounted(() => {
-  emitter.on('USER_DROP_FILE', drop as any)
+  emitter.on(C.USER_DROP_FILE, drop as any)
 })
 onUnmounted(() => {
-  emitter.off('USER_DROP_FILE', drop as any)
+  emitter.off(C.USER_DROP_FILE, drop as any)
 })
 </script>
 <style scoped>

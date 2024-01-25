@@ -1,4 +1,4 @@
-export default {
+export const C = {
   VIDEO_MODULE: 'video',
   IMG_MODULE: 'img',
 

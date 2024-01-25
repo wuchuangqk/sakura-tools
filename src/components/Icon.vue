@@ -1,5 +1,5 @@
 <template>
-  <div class="icon-wrap">
+  <div :class="{ 'icon-wrap': border }">
     <svg aria-hidden="true" class="svg-icon" :style="style">
       <use :xlink:href="iconName" />
     </svg>
@@ -13,9 +13,11 @@ const props = withDefaults(defineProps<{
   name: string, // 图标名称
   size?: string | number,
   color?: string,
+  border?: boolean,
 }>(), {
   size: 16,
   color: 'var(--color)',
+  border: true,
 })
 
 const iconName = computed(() => `#icon-${props.name}`)

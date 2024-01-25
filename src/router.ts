@@ -9,19 +9,19 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/video',
     name: 'video',
-    component: () => import('@/modules/video-cut.vue')
+    component: () => import('@/modules/video-cut/index.vue')
   },
   {
     path: '/img',
     name: 'img',
-    component: () => import('@/modules/img-compress.vue')
+    component: () => import('@/modules/img-compress/index.vue')
   }
 ]
 
 export const router = createRouter({
   history: createMemoryHistory(),
   routes,
-  // 是否应该禁止尾部斜杠。默认为假
+  // 是否应该禁止尾部斜杠。默认为false
   strict: true,
   scrollBehavior: () => ({ left: 0, top: 0 }),
 });

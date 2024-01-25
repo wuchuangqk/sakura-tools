@@ -46,10 +46,9 @@
 <script setup lang="ts">
 import TimeInput from './TimeInput.vue';
 import { message, Button, Modal } from 'ant-design-vue';
-import { useVideoStore } from '@/store/video'
+import { useVideoStore } from '@/store'
 import { reactive, ref } from 'vue';
-import { cutAndMergeVideo } from '@/util/ffmpeg'
-import { Performance } from '@/util/Performance'
+import { cutAndMergeVideo, Performance } from '@/util'
 
 const call = defineEmits(['remove'])
 

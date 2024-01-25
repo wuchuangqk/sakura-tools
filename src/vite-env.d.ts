@@ -35,14 +35,6 @@ interface IThumbnail {
   timeFmt: string
 }
 
-interface IImg {
-  path: string,
-  compressedImg: string,
-  originSize: number,
-  compressedSize: number,
-  compressed: boolean,
-}
-
 interface IFileMeta {
   name: string, 
   dir: string,

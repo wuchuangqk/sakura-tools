@@ -7,9 +7,8 @@
   </svg>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   left: string,
   type?: string, // command|preview
 }>(), {

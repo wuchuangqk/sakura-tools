@@ -12,7 +12,7 @@ const THUMBNAIL_MAX = 10 // 缩略图上限
  * @param timestamp 
  * @returns 
  */
-export const renderThumbnail = async (filePath: string, timestamp: number) => {
+const renderThumbnail = async (filePath: string, timestamp: number) => {
   const args = [
     '-ss', timestamp,
     '-i', `"${filePath}"`,
@@ -32,7 +32,7 @@ export const renderThumbnail = async (filePath: string, timestamp: number) => {
 /**
  * 批量渲染缩略图
  */
-export const renderThumbnails = async ({ from, duration, onThumbnail }: { from: number, duration: number, onThumbnail: Function }) => {
+const renderThumbnails = async ({ from, duration, onThumbnail }: { from: number, duration: number, onThumbnail: Function }) => {
   const { filePath } = useVideoStore().projectMeta
   const thumbTimes = Array(THUMBNAIL_MAX).fill(null).map((unused, i) => from + (duration * i / THUMBNAIL_MAX));
   console.log('缩略图时间点：', thumbTimes);
@@ -44,7 +44,7 @@ export const renderThumbnails = async ({ from, duration, onThumbnail }: { from: 
   }, { concurrency: 4 });
 }
 
-export const queryKeyFrames = async ({ duration }: { duration: number }) => {
+const queryKeyFrames = async ({ duration }: { duration: number }) => {
   const { filePath } = useVideoStore().projectMeta
   const args = [
     '-v', 'error',
@@ -82,7 +82,7 @@ export const queryKeyFrames = async ({ duration }: { duration: number }) => {
  * 截取视频
  * @param param0 from:开始时间 duration:截取的长度（单位：秒）
  */
-export const cutVideo1 = async ({ filePath, from, duration }: { filePath: string, from: number, duration: number }) => {
+const cutVideo1 = async ({ filePath, from, duration }: { filePath: string, from: number, duration: number }) => {
   const outPath = getOutPath(filePath)
   console.log('outPath', outPath);
   const args = [
@@ -137,7 +137,7 @@ const mergeVideo = async (outPath: string, fileListPath: string) => {
   await invoke('ffmpeg:run', args)
 }
 
-export const cutAndMergeVideo = async (segmentList: Segment[]) => {
+const cutAndMergeVideo = async (segmentList: Segment[]) => {
   const { filePath, outDir } = useVideoStore().projectMeta
 
   // 分割并记录输出文件路径
@@ -157,4 +157,12 @@ export const cutAndMergeVideo = async (segmentList: Segment[]) => {
 
   // 删除临时文件
   invoke('os:removeFile', [fileListPath, ...outPathList])
+}
+
+export {
+  renderThumbnail,
+  renderThumbnails,
+  queryKeyFrames,
+  cutVideo1,
+  cutAndMergeVideo,
 }
