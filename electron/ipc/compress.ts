@@ -55,7 +55,7 @@ const run = async ({ filePath, extension, quality }: { filePath: string, extensi
   return new Promise((resolve, reject) => {
     const { bin, args } = commandMap(extension, filePath, output, quality)
     const binPath = getBinPath('compress', bin)
-    const process = exec(`${binPath} ${args.join(' ')}`, (err) => {
+    const process = exec(`"${binPath}" ${args.join(' ')}`, (err) => {
       if (err) {
         console.log(err);
         return reject(err)

@@ -32,7 +32,7 @@ export default defineConfig(({ command }) => {
           },
           vite: {
             build: {
-              sourcemap,
+              sourcemap: false,
               minify: isBuild,
               outDir: 'dist/electron',
               rollupOptions: {
@@ -54,7 +54,7 @@ export default defineConfig(({ command }) => {
           },
           vite: {
             build: {
-              sourcemap: sourcemap ? 'inline' : undefined, // #332
+              sourcemap: false, // #332
               minify: isBuild,
               outDir: 'dist/electron',
               rollupOptions: {

@@ -47,6 +47,7 @@ export class ImgCompress {
     } catch (error) {
       this.compressing = false
       this.error = true
+      console.log(error);
     }
     this.compresTime = Math.floor((performance.now() - start) / 1000)
   }

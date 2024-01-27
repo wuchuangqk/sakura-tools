@@ -3,7 +3,7 @@
   <Menu v-model:selectedKeys="selectedKeys" :mode="mode" theme="dark" :items="items" @click="onClick"></Menu>
 </template>
 <script setup lang="ts">
-import { reactive, h, watch } from 'vue'
+import { reactive, h, watch, ref } from 'vue'
 import {
   PieChartOutlined,
   DesktopOutlined,
@@ -14,7 +14,7 @@ import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
 
-const selectedKeys = reactive(['/video'])
+const selectedKeys = ref(['/video'])
 const items = reactive([
   {
     key: '/video',
@@ -32,7 +32,7 @@ const onClick = ({ key }: any) => {
   router.push(key)
 }
 watch(() => route.path, () => {
-  selectedKeys[0] = route.path
+  selectedKeys.value[0] = route.path
 })
 </script>
     
