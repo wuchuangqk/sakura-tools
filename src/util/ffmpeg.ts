@@ -65,8 +65,9 @@ const queryKeyFrames = async ({ duration }: { duration: number }) => {
 
   // 通过关键帧间隔，推算出所有关键帧时间点
   if (ptsTimeList.length >= 2) {
-    // 第一个关键帧时间点是一定0秒，所以第二个关键帧时间点就是间隔时间
-    const interval = ptsTimeList[1]
+    // 通过前两个关键帧，来计算出关键帧间隔时间
+    const interval = Decimal.sub(ptsTimeList[1], ptsTimeList[0])
+    // 推算出所有的关键帧
     const count = Decimal.div(duration, interval).toNumber()
     const keyFrames = []
     for (let i = 0; i < count; i++) {
@@ -113,10 +114,10 @@ const getOutPath = (filePath: string) => {
   return `"${path}-sakura${random}${suffix}"`
 }
 
-const cutVideo = async ({ filePath, outPath, from, duration }: { filePath: string, outPath: string, from: number, duration: number }) => {
+const cutVideo = async ({ filePath, outPath, from, end }: { filePath: string, outPath: string, from: number, end: number }) => {
   const args = [
     '-ss', from,
-    '-t', duration,
+    '-to', end,
     '-i', `"${filePath}"`,
     '-vcodec', 'copy',
     '-acodec', 'copy',
@@ -131,21 +132,29 @@ const mergeVideo = async (outPath: string, fileListPath: string) => {
     '-f', 'concat',
     '-safe', '0',
     '-i', `"${fileListPath}"`,
-    '-c', 'copy',
+    // '-c', 'copy',
+    '-map', '0:0',
+    '-c:0', 'copy',
+    '-disposition:0', 'default',
+    '-map', '0:1',
+    '-c:1', 'copy',
+    '-disposition:1', 'default',
     outPath,
   ]
   await invoke('ffmpeg:run', args)
 }
 
 const cutAndMergeVideo = async (segmentList: Segment[]) => {
-  const { filePath, outDir } = useVideoStore().projectMeta
+  const {keyFrames, projectMeta} = useVideoStore()
+  const { filePath, outDir } = projectMeta
 
   // 分割并记录输出文件路径
   const outPathList: string[] = []
   const tasks = segmentList.map(seg => {
     const outPath = getOutPath(filePath).replaceAll(`"`, '')
     outPathList.push(outPath)
-    return cutVideo({ filePath, outPath, from: seg.start, duration: Decimal.sub(seg.end, seg.start).toNumber() })
+    // 将时间点替换为更准确的关键帧
+    return cutVideo({ filePath, outPath, from: seg.start, end: seg.end })
   })
   await Promise.all(tasks)
   await invoke('os:createTxtFile', outPathList.map(path => `file 'file:${path}'`), outDir)

@@ -106,7 +106,6 @@ const { resolve, future } = usePromise()
 const modal = reactive({
   replaceProject: false,
 })
-const showConfirm = ref(false)
 
 const play = () => {
   videoRef.value.play()
@@ -167,16 +166,18 @@ const prevKeyFrame = () => {
   const frameTime = keyFrames.value.find((time: number, i) => {
     // 当前元素是最后一位
     if (i === keyFrames.value.length - 1) {
-      return time < currentTime
+      return Math.floor(time) < currentTime
     } else {
-      return time < currentTime && keyFrames.value[i + 1] >= currentTime
+      return Math.floor(time) < currentTime && keyFrames.value[i + 1] >= currentTime
     }
   })
   if (typeof frameTime !== 'undefined') setCurrentTime(frameTime)
 }
 const nextKeyFrame = () => {
   const { currentTime } = videoMeta
-  const frameTime = keyFrames.value.find((time: number) => time > currentTime)
+  // 修复点击下一帧没反应的问题，将time转成整数，使得至少比currentTime多一秒的时间，不然两个时间太接近，设置currentTime没效果
+  // frameTime:128.128 currentTime:128.127998
+  const frameTime = keyFrames.value.find((time: number) => Math.floor(time) > currentTime)
   if (typeof frameTime !== 'undefined') setCurrentTime(frameTime)
 }
 const setKeyFrames = async () => {
@@ -258,14 +259,15 @@ const drop = async (files: FileList) => {
   // console.log('isModuleActive', isModuleActive.value, C.VIDEO_MODULE);
   if (!isModuleActive.value) return
   // 检查mimetype，例如 video/mp4 video/mkv
+  console.log(files[0].type);
   if (!files[0].type.startsWith('video')) return message.error('暂不支持该视频格式')
   if (!isFileOpened.value) {
     onFileLoad(files)
     return
   }
   // 询问是否要替换当前视频
-  await future(() => showConfirm.value = true)
-  showConfirm.value = false
+  await future(() => modal.replaceProject = true)
+  modal.replaceProject = false
   store.reset()
   onFileLoad(files)
 }

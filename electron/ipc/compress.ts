@@ -20,7 +20,7 @@ const commandMap = (type: string, input, output, quality) => {
     'jpg': {
       bin: 'moz-cjpeg',
       args: [
-        '-quality', `'${quality}'`,
+        '-quality', quality,
         '-outfile', output,
         `"${input}"`,
       ]
@@ -36,7 +36,7 @@ const commandMap = (type: string, input, output, quality) => {
     'webp': {
       bin: 'cwebp',
       args: [
-        '-q', `'${quality}'`,
+        '-q', quality,
         `"${input}"`,
         '-o', output,
       ]
