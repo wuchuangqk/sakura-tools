@@ -14,7 +14,6 @@ export default defineConfig(({ command }) => {
 
   const isServe = command === 'serve'
   const isBuild = command === 'build'
-  const sourcemap = isServe || !!process.env.VSCODE_DEBUG
 
   return {
     plugins: [
@@ -22,7 +21,7 @@ export default defineConfig(({ command }) => {
       electron([
         {
           // Main process entry file of the Electron App.
-          entry: 'electron/main.ts',
+          entry: 'src/electron/main.ts',
           onstart({ startup }) {
             if (process.env.VSCODE_DEBUG) {
               console.log(/* For `.vscode/.debug.script.mjs` */'[startup] Electron App')
@@ -41,12 +40,17 @@ export default defineConfig(({ command }) => {
                 // Others need to put them in `dependencies` to ensure they are collected into `app.asar` after the app is built.
                 // Of course, this is not absolute, just this way is relatively simple. :)
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                output: {
+                  format: 'esm',
+                  entryFileNames: `[name].js`,
+                  chunkFileNames: `[name].js`,
+                }
               },
             },
           },
         },
         {
-          entry: 'electron/preload.ts',
+          entry: 'src/electron/preload.ts',
           onstart({ reload }) {
             // Notify the Renderer process to reload the page when the Preload scripts build is complete, 
             // instead of restarting the entire Electron App.
@@ -59,6 +63,11 @@ export default defineConfig(({ command }) => {
               outDir: 'dist/electron',
               rollupOptions: {
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                output: {
+                  format: 'esm',
+                  entryFileNames: `[name].js`,
+                  chunkFileNames: `[name].js`,
+                }
               },
             },
           },

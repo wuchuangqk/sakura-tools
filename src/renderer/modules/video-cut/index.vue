@@ -79,10 +79,10 @@ import TimeLine from './components/TimeLine.vue'
 import StartPage from './components/StartPage.vue'
 import TimeInput from './components/TimeInput.vue'
 import SegmentList from './components/SegmentList.vue'
-import { emitter, fmtDuration, fmtSeconds, renderThumbnails, queryKeyFrames, Segment, bindKeyboard, C } from '@/util'
-import { useVideoStore } from '@/store'
+import { emitter, fmtDuration, fmtSeconds, renderThumbnails, queryKeyFrames, Segment, bindKeyboard, C } from '@/renderer/util'
+import { useVideoStore } from '@/renderer/store'
 import { storeToRefs } from 'pinia'
-import { useModule, usePromise } from '@/composables'
+import { useModule, usePromise } from '@/renderer/composables'
 import { message } from 'ant-design-vue';
 
 const { invoke } = window

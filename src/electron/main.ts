@@ -43,7 +43,7 @@ if (!app.requestSingleInstanceLock()) {
 
 export let win: BrowserWindow | null = null
 // Here, you can also use other preload
-const preload = join(__dirname, 'preload.mjs')
+const preload = join(__dirname, 'preload.js')
 const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST_RENDER, 'index.html')
 

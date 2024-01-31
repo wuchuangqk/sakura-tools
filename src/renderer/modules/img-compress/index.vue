@@ -69,11 +69,11 @@ import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import ImgCompare from './components/ImgCompare.vue';
 import ImgCard from './components/ImgCard.vue';
 import StartPage from './components/StartPage.vue';
-import { emitter, C, ImgCompress, getFileExtension } from '@/util'
-import { useModule, usePromise } from '@/composables'
+import { emitter, C, ImgCompress, getFileExtension } from '@/renderer/util'
+import { useModule, usePromise } from '@/renderer/composables'
 import { SaveType } from '../../../common/types'
 import { message } from 'ant-design-vue';
-import { useVideoStore } from '@/store'
+import { useVideoStore } from '@/renderer/store'
 import { useFileDialog } from '@vueuse/core'
 
 const { invoke } = window

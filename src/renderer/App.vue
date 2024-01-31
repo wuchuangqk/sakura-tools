@@ -17,10 +17,10 @@
 </template>
 <script setup lang="ts">
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
-import Menu from '@/components/Menu.vue'
-import Logo from '@/components/Logo.vue'
-import { useDrop } from '@/composables'
-import { appStore } from '@/store'
+import Menu from '@/renderer/components/Menu.vue'
+import Logo from '@/renderer/components/Logo.vue'
+import { useDrop } from '@/renderer/composables'
+import { appStore } from '@/renderer/store'
 import { onMounted } from 'vue'
 
 const theme = {

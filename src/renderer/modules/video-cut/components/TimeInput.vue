@@ -3,7 +3,7 @@
 </template>
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { fmtDuration, reverseToSecond } from '@/util'
+import { fmtDuration, reverseToSecond } from '@/renderer/util'
 
 const props = withDefaults(defineProps<{
   value?: number,

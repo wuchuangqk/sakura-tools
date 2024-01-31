@@ -29,10 +29,10 @@
 import { computed, ref } from 'vue'
 import TimeLinePointer from './TimeLinePointer.vue';
 import ScaleLine from './ScaleLine.vue';
-import { Segment } from '@/util'
+import { Segment } from '@/renderer/util'
 import { throttle } from 'lodash'
 import Decimal from 'decimal.js';
-import { useVideoStore } from '@/store'
+import { useVideoStore } from '@/renderer/store'
 import { storeToRefs } from 'pinia'
 import { sortBy } from 'lodash'
 

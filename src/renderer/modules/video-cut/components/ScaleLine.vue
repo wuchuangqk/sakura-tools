@@ -10,10 +10,10 @@
   </div>
 </template>
 <script setup lang="ts">
-import { useVideoStore } from '@/store'
+import { useVideoStore } from '@/renderer/store'
 import { computed } from 'vue';
 import Decimal from 'decimal.js'
-import { getAvgNums } from '@/util'
+import { getAvgNums } from '@/renderer/util'
 
 const store = useVideoStore()
 const videoMeta = store.videoMeta

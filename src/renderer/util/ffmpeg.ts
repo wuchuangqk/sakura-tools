@@ -1,7 +1,7 @@
 import pMap from 'p-map';
 import Decimal from 'decimal.js'
 import { Segment } from './Segment';
-import { useVideoStore } from '@/store/video';
+import { useVideoStore } from '@/renderer/store/video';
 
 const { invoke } = window
 const THUMBNAIL_MAX = 10 // 缩略图上限

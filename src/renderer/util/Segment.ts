@@ -1,7 +1,7 @@
 import Decimal from "decimal.js"
 import { renderThumbnail } from './ffmpeg'
 import { debounce } from 'lodash'
-import { useVideoStore } from '@/store/video'
+import { useVideoStore } from '@/renderer/store/video'
 
 let duration = 0
 let filePath = ''

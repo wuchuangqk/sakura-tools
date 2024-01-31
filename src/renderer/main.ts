@@ -4,8 +4,8 @@ import { createPinia } from "pinia";
 import 'virtual:svg-icons-register'
 import { Tooltip, ConfigProvider, Modal, Button, Spin, Card, Slider, Flex } from 'ant-design-vue';
 import './style.scss'
-import Icon from '@/components/Icon.vue'
-import { router } from '@/router'
+import Icon from '@/renderer/components/Icon.vue'
+import { router } from '@/renderer/router'
 
 const app = createApp(App)
 app.use(createPinia());

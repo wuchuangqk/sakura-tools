@@ -17,7 +17,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "electron", "common"],
+  "include": ["src", "src/electron", "src/common"],
   "references": [
     { "path": "./tsconfig.node.json" }
   ]

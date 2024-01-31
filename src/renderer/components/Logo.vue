@@ -5,7 +5,7 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
-import logo from '@/assets/app.ico'
+import logo from '@/renderer/assets/app.ico'
 </script>
 
 <style lang="scss" scoped></style>

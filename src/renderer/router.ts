@@ -9,12 +9,12 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/video',
     name: 'video',
-    component: () => import('@/modules/video-cut/index.vue')
+    component: () => import('@/renderer/modules/video-cut/index.vue')
   },
   {
     path: '/img',
     name: 'img',
-    component: () => import('@/modules/img-compress/index.vue')
+    component: () => import('@/renderer/modules/img-compress/index.vue')
   }
 ]
 

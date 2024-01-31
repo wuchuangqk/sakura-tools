@@ -1,5 +1,5 @@
 import { onMounted, onUnmounted } from "vue"
-import { emitter, C } from '@/util'
+import { emitter, C } from '@/renderer/util'
 
 export const useDrop = () => {
   // 拖拽上传

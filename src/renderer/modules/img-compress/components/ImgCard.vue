@@ -56,8 +56,8 @@
 <script setup lang="ts">
 import { ref, h, onMounted, computed } from 'vue'
 import { LoadingOutlined } from '@ant-design/icons-vue';
-import { fmtFileSize } from '@/util'
-import { ImgCompress } from '@/util/ImgCompress';
+import { fmtFileSize } from '@/renderer/util'
+import { ImgCompress } from '@/renderer/util/ImgCompress';
 
 const props = defineProps<{
   img: ImgCompress,
