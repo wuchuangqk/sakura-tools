@@ -20,9 +20,9 @@ const getFileMeta = (filePath: string) => {
  * @param outPathList 
  * @param dir 
  */
-const createTxtFile = async (outPathList: string[], dir) => {
+const createTxtFile = (outPathList: string[], dir: string) => {
   const content = outPathList.join('\n')
-  await fs.writeFileSync(path.join(dir, 'fileList.txt'), content, { encoding: 'utf-8' })
+  fs.writeFileSync(path.join(dir, 'fileList.txt'), content, { encoding: 'utf-8' })
 }
 
 const removeFile = (pathList: string[]) => {
@@ -31,7 +31,7 @@ const removeFile = (pathList: string[]) => {
 
 const openDir = (dirPath: string) => {
   if (!dirPath) return
-  // start命令默认会把加引号的路径当成标题，所以要在中间加一个空引号来避开这个问题
+  // start命令默认会把加引号的路径当成标题，所以要在中间加一个空引号(作为标题)来避开这个问题
   exec(`start "" "${dirPath}"`)
 }
 

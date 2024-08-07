@@ -15,7 +15,7 @@ interface ISave {
 
 const tmpdir = resolve(os.tmpdir(), 'sakura') // 系统临时文件目录（C:\Users\wuchu\AppData\Local\Temp）
 
-const commandMap = (type: string, input, output, quality) => {
+const commandMap = (type: string, input: string, output: string, quality: number) => {
   const map = {
     'jpg': {
       bin: 'moz-cjpeg',

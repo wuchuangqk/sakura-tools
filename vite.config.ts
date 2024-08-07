@@ -81,13 +81,9 @@ export default defineConfig(({ command }) => {
         svgoOptions: true
       }),
     ],
-    server: process.env.VSCODE_DEBUG && (() => {
-      const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
-      return {
-        host: url.hostname,
-        port: +url.port,
-      }
-    })(),
+    server: {
+      port: 9000,
+    },
     clearScreen: false,
     resolve: {
       alias: {

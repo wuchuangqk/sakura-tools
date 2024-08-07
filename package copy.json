@@ -65,7 +65,13 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "./resources/app.ico"
+      "icon": "./resources/app.ico",
+      "extraResources": [
+        {
+          "from": "resources",
+          "to": "."
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
