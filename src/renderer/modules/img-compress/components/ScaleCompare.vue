@@ -5,10 +5,10 @@ import { onMounted } from 'vue';
 import { reactive } from 'vue';
 import { ref } from 'vue'
 import { throttle } from 'lodash'
-// defineProps<{
-//   original: string,
-//   after: string
-// }>()
+defineProps<{
+  original: string,
+  after: string
+}>()
 
 const img = ref<HTMLImageElement>(null as unknown as HTMLImageElement)
 const ratio = ref(1)
@@ -139,17 +139,17 @@ onBeforeUnmount(() => {
   <div>
     <div class="d1">
       <div class="d2">
-        <img ref="img" src="/src/assets/a.png" alt="" class="img" :style="imgStyle">
+        <img ref="img" :src="original" alt="" class="img" :style="imgStyle">
       </div>
       <div class="d2">
-        <img src="/src/assets/b.png" alt="" class="img" :style="imgStyle">
+        <img :src="after" alt="" class="img" :style="imgStyle">
       </div>
     </div>
     <button @click="ratio = 1">原始尺寸</button>
     <button @click="ratio = 1.5">放大1.5</button>
     <button @click="ratio = 2">放大2</button>
     <div ref="minimapRef" class="minimap">
-      <img src="/src/assets/a.png" alt="" class="img">
+      <img :src="original" alt="" class="img">
       <div class="mask"></div>
       <div ref="viewportRef" class="viewport" :style="viewportStyle"></div>
     </div>

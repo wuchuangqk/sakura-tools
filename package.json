@@ -21,13 +21,14 @@
     "vite-build": "vite build"
   },
   "devDependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
     "@types/lodash": "^4.14.202",
     "@vitejs/plugin-vue": "^5.0.1",
     "@vueuse/core": "^10.7.2",
     "ant-design-vue": "4.x",
     "autoprefixer": "^10.4.16",
     "decimal.js": "^10.4.3",
-    "electron": "^28.1.0",
+    "electron": "^31.4.0",
     "electron-builder": "^24.9.1",
     "execa": "^8.0.1",
     "lodash": "^4.17.21",
@@ -41,12 +42,12 @@
     "tree-kill": "^1.2.2",
     "typescript": "^5.3.3",
     "vite": "^5.0.10",
-    "vite-plugin-electron": "^0.28.0-beta.1",
+    "vite-plugin-electron": "^0.28.7",
     "vite-plugin-electron-renderer": "^0.14.5",
     "vite-plugin-svg-icons": "^2.0.1",
     "vue": "^3.4.1",
     "vue-router": "^4.2.5",
-    "vue-tsc": "^1.8.27"
+    "vue-tsc": "^2.0.29"
   },
   "dependencies": {
     "fs-extra": "^11.2.0",

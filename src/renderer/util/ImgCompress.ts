@@ -14,7 +14,7 @@ export class ImgCompress {
   compressedSize: number = 0 // 图片压缩后大小
   compressed: boolean = false // 是否压缩完成
   extension: string // 图片扩展名（jpg,png,webp）
-  quality: number = 80 // 压缩质量（10-100）
+  quality: number = 90 // 压缩质量（10-100）
   error = false // 是否压缩出错
   compressing = true // 是否压缩完成
   compresTime = 0 // 压缩用时（单位：秒）

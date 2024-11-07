@@ -28,9 +28,9 @@ const commandMap = (type: string, input: string, output: string, quality: number
     'png': {
       bin: 'pngquant',
       args: [
-        '256',
-        `"${input}"`,
+        '--quality=0-100',
         '--output', output,
+        `"${input}"`,
       ]
     },
     'webp': {
