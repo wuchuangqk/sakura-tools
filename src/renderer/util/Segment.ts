@@ -59,7 +59,7 @@ export class Segment {
    * 生成缩略图
    */
   async createThumbnail() {
-    const url = await renderThumbnail(filePath, this.start)
+    const url = await renderThumbnail(filePath, this.start, 160)
     this.thumbnail = url
   }
 

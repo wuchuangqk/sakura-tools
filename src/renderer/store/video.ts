@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
-import { Segment } from '@/util/Segment'
+import { Segment } from '@/renderer/util/Segment'
 
 const { invoke } = window
 
@@ -14,6 +14,9 @@ export const useVideoStore = defineStore('video', () => {
     fileName: '',
     outDir: '', // 导出视频所在目录
     filePath: '',
+  })
+  const show = reactive({
+    exportComplete: false,
   })
   const isFileOpened = ref(false) // 是否打开文件
   const segmentList = reactive<Segment[]>([]) // 片段列表
@@ -38,6 +41,7 @@ export const useVideoStore = defineStore('video', () => {
     videoMeta.durationFmt = '00:00:00.000'
     thumbnails.length = 0
     keyFrames.value.length = 0
+    show.exportComplete = false
   }
   const init = async () => {
     appMeta.name = await invoke<string>('app:getName')
@@ -55,6 +59,7 @@ export const useVideoStore = defineStore('video', () => {
     keyFrames,
     projectMeta,
     appMeta,
+    show,
     reset,
     init,
   }

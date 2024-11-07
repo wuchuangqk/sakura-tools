@@ -6,8 +6,10 @@
 
 :root {
   --dark1: #333333;
-  --dark2: #313131;
+  --dark2: #323232;
   --dark3: #232323;
+  --dark4: #464646;
+  --theme-color: #1677ff;
 }
 
 .dark-theme {
@@ -15,6 +17,7 @@
   --color: #eee; // 文字颜色
   --divider: #454545; // 分割线颜色
   --divider2: #494949; // 分割线颜色
+  --divider3: #555555; // 分割线颜色
 }
 
 html,

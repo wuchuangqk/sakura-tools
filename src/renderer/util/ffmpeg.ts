@@ -4,19 +4,20 @@ import { Segment } from './Segment';
 import { useVideoStore } from '@/renderer/store/video';
 
 const { invoke } = window
-const THUMBNAIL_MAX = 10 // 缩略图上限
+const THUMBNAIL_MAX = 20 // 缩略图上限
 
 /**
  * 渲染单张缩略图
  * @param filePath 
  * @param timestamp 
+ * @param height 缩略图高度 
  * @returns 
  */
-const renderThumbnail = async (filePath: string, timestamp: number) => {
+const renderThumbnail = async (filePath: string, timestamp: number, height = 80) => {
   const args = [
     '-ss', timestamp,
     '-i', `"${filePath}"`,
-    '-vf', 'scale=-2:160',
+    '-vf', `scale=-2:${height}`,
     '-f', 'image2',
     '-vframes', '1',
     '-q:v', '10',
@@ -79,39 +80,12 @@ const queryKeyFrames = async ({ duration }: { duration: number }) => {
   }
 }
 
-/**
- * 截取视频
- * @param param0 from:开始时间 duration:截取的长度（单位：秒）
- */
-const cutVideo1 = async ({ filePath, from, duration }: { filePath: string, from: number, duration: number }) => {
-  const outPath = getOutPath(filePath)
-  console.log('outPath', outPath);
-  const args = [
-    '-ss', from,
-    '-i', `"${filePath}"`,
-    '-t', duration,
-    '-avoid_negative_ts', 'make_zero',
-    '-map', '0:0',
-    '-c:0', 'copy ',
-    '-tag:0', 'hvc1 ',
-    '-map', '0:1',
-    '-c:1', 'copy',
-    '-map_metadata', '0',
-    '-movflags', '+faststart',
-    '-default_mode', 'infer_no_subs',
-    '-ignore_unknown',
-    '-f', 'mp4',
-    '-y',
-    outPath,
-  ]
-  await invoke('ffmpeg:run', args)
-}
-
+let seed = 1
 const getOutPath = (filePath: string) => {
   const path = filePath.substring(0, filePath.lastIndexOf('.'))
   const suffix = filePath.substring(filePath.lastIndexOf('.'))
-  const random = Math.floor(Math.random() * (10000 - 999 + 1) + 999);
-  return `"${path}-sakura${random}${suffix}"`
+  seed++
+  return `"${path}-sakura-${new Date().getTime()}-${seed}${suffix}"`
 }
 
 const cutVideo = async ({ filePath, outPath, from, end }: { filePath: string, outPath: string, from: number, end: number }) => {
@@ -132,20 +106,20 @@ const mergeVideo = async (outPath: string, fileListPath: string) => {
     '-f', 'concat',
     '-safe', '0',
     '-i', `"${fileListPath}"`,
-    // '-c', 'copy',
-    '-map', '0:0',
-    '-c:0', 'copy',
-    '-disposition:0', 'default',
-    '-map', '0:1',
-    '-c:1', 'copy',
-    '-disposition:1', 'default',
+    '-c', 'copy',
+    // '-map', '0:0',
+    // '-c:0', 'copy',
+    // '-disposition:0', 'default',
+    // '-map', '0:1',
+    // '-c:1', 'copy',
+    // '-disposition:1', 'default',
     outPath,
   ]
   await invoke('ffmpeg:run', args)
 }
 
 const cutAndMergeVideo = async (segmentList: Segment[]) => {
-  const {keyFrames, projectMeta} = useVideoStore()
+  const {projectMeta} = useVideoStore()
   const { filePath, outDir } = projectMeta
 
   // 分割并记录输出文件路径
@@ -157,13 +131,14 @@ const cutAndMergeVideo = async (segmentList: Segment[]) => {
     return cutVideo({ filePath, outPath, from: seg.start, end: seg.end })
   })
   await Promise.all(tasks)
+  console.log('cutVideo完毕');
   await invoke('os:createTxtFile', outPathList.map(path => `file 'file:${path}'`), outDir)
-
+  console.log('createTxtFile完毕');
   // 合并
   const outPath = getOutPath(filePath)
   const fileListPath = `${outDir}\\fileList.txt`
   await mergeVideo(outPath, fileListPath)
-
+  console.log('mergeVideo完毕');
   // 删除临时文件
   invoke('os:removeFile', [fileListPath, ...outPathList])
 }
@@ -172,6 +147,5 @@ export {
   renderThumbnail,
   renderThumbnails,
   queryKeyFrames,
-  cutVideo1,
   cutAndMergeVideo,
 }

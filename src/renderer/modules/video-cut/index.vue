@@ -9,7 +9,9 @@
           <!-- <video ref="videoRef" src="D:\Users\qingkong\Videos\Captures\枫丹.mp4" class="w-full h-full object-contain"
             @loadedmetadata="onLoadedmetadata" @timeupdate="timeupdate"></video> -->
         </div>
-        <div v-if="isLoadVideoMeta" class="flex h-[40px] items-center px-10">
+
+        <!-- 操作栏 -->
+        <div v-if="isLoadVideoMeta" class="flex h-[40px] items-center px-10 bg-[var(--dark4)]">
           <div class="flex items-center">
             <TimeInput ref="videoTimeRef" :value="videoMeta.currentTime" @change="changeVideoCurrentTime" />
             <span class=" text-gray-400 fs-13 ml-10">{{ videoMeta.durationFmt }}</span>
@@ -54,10 +56,14 @@
           </div>
           <div></div>
         </div>
+
       </div>
       <SegmentList @remove="removeSegment" />
     </div>
+
+    <!-- 时间线 -->
     <TimeLine v-if="isLoadVideoMeta" />
+
     <div v-if="isLoadVideoMeta" class=" text-gray-400 fs-13 h-30 flex items-center justify-between px-10">
       <div class="flex items-center">
         <Icon name="video" size="16" color="#9ca3af" />
@@ -201,6 +207,7 @@ const onFileLoad = async (files: FileList) => {
 }
 
 const addSegment = () => {
+  prevKeyFrame()
   const { currentTime } = videoMeta
   const existSegment = segmentList.find((seg) => seg.start <= currentTime && currentTime <= seg.end)
   // 如果当前时间点在某一个片段区间，则重设片段起点
@@ -223,6 +230,7 @@ const addSegment = () => {
   }
 }
 const setSegmentEnd = () => {
+  nextKeyFrame()
   // 只有在区间时才可以设置终点
   const { currentTime } = videoMeta
   const segment = segmentList.find(seg => seg.start < currentTime && currentTime < seg.end)

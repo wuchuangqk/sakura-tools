@@ -15,15 +15,16 @@ export const isDev = !!process.env.VITE_DEV_SERVER_URL
  */
 export const debug = (info: string | Buffer | Uint8Array) => {
   if (!isDev) return
-  const options = {
-    hostname: 'localhost',
-    port: 9000,
-    method: 'POST',
-    path: '/'
-  }
+  // const options = {
+  //   hostname: 'localhost',
+  //   port: 9000,
+  //   method: 'POST',
+  //   path: '/'
+  // }
   // const req = http.request(options)
   // req.write(info)
   // req.end()
+  console.log(info);
 }
 
 export const getBinPath = (fold: string, bin: string) => {

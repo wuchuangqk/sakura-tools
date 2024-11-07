@@ -36,9 +36,10 @@ const style = computed(() => ({ width: props.size + 'px', height: props.size + '
 .icon-wrap {
   padding: 4px 6px;
   border-radius: 4px;
+  cursor: pointer;
 
   &:hover {
-    background-color: #454646;
+    background-color: var(--dark2);
   }
 }
 </style>

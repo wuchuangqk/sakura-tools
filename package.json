@@ -1,7 +1,7 @@
 {
   "name": "sakura-cut",
   "productName": "樱花工具箱",
-  "version": "1.9.7",
+  "version": "1.0.0",
   "main": "dist/electron/main.js",
   "description": "video and audio editing software",
   "author": "wuchuangqk",

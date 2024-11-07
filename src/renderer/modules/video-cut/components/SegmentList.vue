@@ -1,5 +1,5 @@
 <template>
-  <div class="segment-list">
+  <div class="segment-list ml-4">
     <div class="flex p-10 justify-between items-center select-none">
       <div>
         <span>{{ segmentList.length }}</span>
@@ -15,19 +15,23 @@
       </div>
     </div>
     <div class=" flex-1 overflow-auto">
-      <div v-for="(segment, index) in segmentList" :key="segment.key"
-        class="px-10 py-10 border-b border-[#555555] last-of-type:border-b-0">
-        <div class=" relative">
-          <img :src="segment.thumbnail" alt="" style="height: 112px;object-fit: cover;" @click="click(segment.start)">
-          <div class=" absolute right-0 top-0 px-4 py-2 bg-white/50 text-xs cursor-pointer" @click="remove(index)">删除
+      <div v-for="(segment, index) in segmentList" :key="segment.key" class="p-2">
+        <div class="h-1 bg-[var(--divider3)]"></div>
+        <div class="border-2 border-transparent hover:border-[var(--theme-color)] px-8 py-8">
+          <div class=" relative">
+            <img :src="segment.thumbnail" alt="" style="height: 112px;object-fit: cover;" @click="click(segment.start)">
+            <div
+              class=" absolute right-0 top-0 px-8 py-6 bg-black/80 text-xs cursor-pointer hover:text-[var(--theme-color)]"
+              @click="remove(index)">删除
+            </div>
           </div>
-        </div>
-        <div class="flex justify-between items-center mt-6">
-          <TimeInput :ref="(el) => startInputRefs[segment.key] = el" :value="segment.start"
-            @change="(time) => setTime(index, time, 'start')" />
-          <span>-</span>
-          <TimeInput :ref="(el) => endInputRefs[segment.key] = el" :value="segment.end"
-            @change="(time) => setTime(index, time, 'end')" />
+          <div class="flex justify-between items-center mt-6">
+            <TimeInput :ref="(el) => startInputRefs[segment.key] = el" :value="segment.start"
+              @change="(time) => setTime(index, time, 'start')" />
+            <span>-</span>
+            <TimeInput :ref="(el) => endInputRefs[segment.key] = el" :value="segment.end"
+              @change="(time) => setTime(index, time, 'end')" />
+          </div>
         </div>
       </div>
     </div>
@@ -35,7 +39,7 @@
       <Button type="primary" class="w-full" :disabled="segmentList.length === 0" :loading="exportLoading"
         @click="exportVideo">导出</Button>
     </div>
-    <Modal v-model:open="modal.exportComplete" title="提示" centered>
+    <Modal v-model:open="show.exportComplete" title="提示" centered>
       <div>导出完成，用时：{{ exportTime }}</div>
       <template #footer>
         <Button type="primary" @click="openOutDir">打开输出目录</Button>
@@ -45,10 +49,11 @@
 </template>
 <script setup lang="ts">
 import TimeInput from './TimeInput.vue';
-import { message, Button, Modal } from 'ant-design-vue';
+import { Button, Modal } from 'ant-design-vue';
 import { useVideoStore } from '@/renderer/store'
 import { reactive, ref } from 'vue';
 import { cutAndMergeVideo, Performance } from '@/renderer/util'
+import { message } from 'ant-design-vue';
 
 const call = defineEmits(['remove'])
 
@@ -57,14 +62,12 @@ const { invoke } = window
 const store = useVideoStore()
 const segmentList = store.segmentList
 const projectMeta = store.projectMeta
+const show = store.show
 const { setCurrentTime } = store.action
 
 const startInputRefs: any = {}
 const endInputRefs: any = {}
 
-const modal = reactive({
-  exportComplete: false,
-})
 const exportTime = ref('')
 
 const exportLoading = ref(false)
@@ -106,14 +109,20 @@ const exportVideo = async () => {
   if (!segmentList.length) return
   Performance.start()
   exportLoading.value = true
-  await cutAndMergeVideo(segmentList)
-  exportLoading.value = false
-  message.success('导出完成')
-  exportTime.value = Performance.end()
-  modal.exportComplete = true
+  try {
+    await cutAndMergeVideo(segmentList)
+    exportLoading.value = false
+    message.success('导出完成')
+    exportTime.value = Performance.end()
+    show.exportComplete = true
+  } catch (error) {
+    console.log(error);
+    exportLoading.value = false
+    message.err('导出失败')
+  }
 }
 const openOutDir = () => {
-  modal.exportComplete = false
+  show.exportComplete = false
   invoke('os:openDir', projectMeta.outDir)
 }
 </script>

@@ -21,8 +21,8 @@ const getFileMeta = (filePath: string) => {
  * @param dir 
  */
 const createTxtFile = (outPathList: string[], dir: string) => {
-  const content = outPathList.join('\n')
-  fs.writeFileSync(path.join(dir, 'fileList.txt'), content, { encoding: 'utf-8' })
+      const content = outPathList.join('\n')
+      fs.writeFileSync(path.join(dir, 'fileList.txt'), content, { encoding: 'utf-8' })
 }
 
 const removeFile = (pathList: string[]) => {

@@ -43,7 +43,7 @@ defineExpose({
 
 <style lang="scss" scoped>
 .time-input {
-  background: #323232;
+  background: var(--dark2);
   width: 90px;
   text-align: center;
   padding: 4px 0;

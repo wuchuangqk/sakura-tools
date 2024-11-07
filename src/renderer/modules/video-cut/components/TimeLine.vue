@@ -1,5 +1,5 @@
 <template>
-  <div ref="timeLineRef" class="relative flex flex-col bg-[#313131] pt-20 pb-20 select-none" @click="click"
+  <div ref="timeLineRef" class="relative flex flex-col bg-[var(--dark4)] pt-20 pb-20 select-none mt-4" @click="click"
     @mousemove="preview" @mouseleave="onMouseleaveTimeLine">
     <ScaleLine class="mb-2" />
     <div class="flex mb-16">
@@ -8,7 +8,7 @@
         {{ thumbnail.timeFmt }}
       </span>
     </div>
-    <div class="flex relative" style="height: 60px;">
+    <div class="flex relative h-40">
       <div v-for="thumbnail in thumbnails" :key="thumbnail.url"
         class="flex-1 overflow-hidden pr-1 last-of-type:pr-0 h-full">
         <img :src="thumbnail.url" alt="" class=" w-full h-full object-cover select-none">
