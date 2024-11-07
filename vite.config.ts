@@ -78,7 +78,7 @@ export default defineConfig(({ command }) => {
       // Use Node.js API in the Renderer process
       renderer(),
       createSvgIconsPlugin({
-        iconDirs: [path.resolve(process.cwd(), 'src/assets/icon')],
+        iconDirs: [path.resolve(process.cwd(), 'src/renderer/assets/icon')],
         symbolId: 'icon-[dir]-[name]',
         svgoOptions: true
       }),
