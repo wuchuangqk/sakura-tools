@@ -40,7 +40,7 @@
       <section class="flex-1 overflow-hidden">
         <StartPage v-if="imgs.length === 0" @load="drop" />
         <div class="h-full p-10">
-          <ImgCompare v-if="selected !== -1" :before="imgs[selected].path" :after="imgs[selected].compressedImg" />
+          <!-- <ImgCompare v-if="selected !== -1" :before="imgs[selected].path" :after="imgs[selected].compressedImg" /> -->
         </div>
       </section>
     </main>
@@ -66,7 +66,7 @@
 </template>
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import ImgCompare from './components/ImgCompare.vue';
+// import ImgCompare from './components/ImgCompare.vue';
 import ImgCard from './components/ImgCard.vue';
 import StartPage from './components/StartPage.vue';
 import { emitter, C, ImgCompress, getFileExtension } from '@/renderer/util'

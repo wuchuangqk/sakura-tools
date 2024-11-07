@@ -21,6 +21,7 @@
     "vite-build": "vite build"
   },
   "devDependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
     "@types/lodash": "^4.14.202",
     "@vitejs/plugin-vue": "^5.0.1",
     "@vueuse/core": "^10.7.2",
