@@ -1,22 +1,33 @@
 <template>
-  <div ref="viewportRef" class="h-full relative select-none overflow-hidden">
-    <div class="w-full h-full">
-      <img v-if="before" :src="before" alt="" class="img">
+  <div class="h-full flex flex-col relative overflow-hidden">
+    <div class="flex items-center">
+      <div class="w-[150px] mr-6">
+        <Slider v-model:value="ratio" :max="5" :min="1" :step="1" />
+      </div>
+      <div>放大倍数：{{ ratio }}</div>
     </div>
-    <div class=" absolute top-0 bottom-0 w-full h-full overflow-hidden" :style="{ left: imgLayoutLeft + '%' }">
-      <img v-if="after" :src="after" alt="" class="img absolute" :style="{ left: (-imgLayoutLeft) + '%' }">
+    <div ref="viewportRef" class="flex-1 relative select-none overflow-hidden">
+      <div class="w-full h-full relative">
+        <img v-if="before" ref="imgRef" :src="before" alt="" class="img" :style="imgStyle">
+      </div>
+      <div ref="parentRef" class=" absolute top-0 bottom-0 w-full h-full overflow-hidden"
+        :style="{ left: imgLayoutLeft + '%' }">
+        <img v-if="after" :src="after" alt="" class="img absolute" :style="imgStyle2">
+      </div>
+      <div ref="handleRef" class="w-12 absolute top-0 bottom-0 cursor-e-resize" :style="{ left: handleLeftFmt }"
+        @mousedown="onMouseDown">
+        <div class="bg-white/80 w-2 h-full mx-auto handler"></div>
+        <div class=" absolute tag -left-60">原图</div>
+        <div class=" absolute tag left-20">压缩后</div>
+      </div>
     </div>
-    <div ref="handleRef" class="w-12 absolute top-0 bottom-0 cursor-e-resize" :style="{ left: handleLeftFmt }"
-      @mousedown="onMouseDown">
-      <div class="bg-white/80 w-2 h-full mx-auto handler"></div>
-      <div class=" absolute tag -left-60">原图</div>
-      <div class=" absolute tag left-20">压缩后</div>
-    </div>
+    <MiniMap :img="before" :ratio="ratio" @update="onUpdate" />
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch, useTemplateRef } from 'vue'
 import { throttle } from 'lodash'
+import MiniMap from './MiniMap.vue';
 
 const props = defineProps<{
   before: string,
@@ -31,7 +42,19 @@ let handleLeftOrigin = 0
 const viewportWidth = ref(0)
 let handleWidth = 0
 const safeArea = 10 // 距离两边的距离，防止竖条跑到外面
+const minimapPercent = reactive({
+  x: 0,
+  y: 0,
+})
+const ratio = ref(1)
 
+const imgRef = useTemplateRef('imgRef')
+const parentRef = useTemplateRef('parentRef')
+
+const onUpdate = ({ x, y }: { x: number, y: number }) => {
+  minimapPercent.x = x
+  minimapPercent.y = y
+}
 const mousemove = throttle((event: MouseEvent) => {
   const moveX = originX - event.pageX
   if (moveX > 0) {
@@ -70,6 +93,41 @@ const imgLayoutLeft = computed(() => {
     return handleLeft.value / viewportWidth.value * 100
   }
 })
+const imgStyle = computed(() => {
+  let width = 0
+  let height = 0
+  if (imgRef.value) {
+    width = imgRef.value.offsetWidth
+    height = imgRef.value.offsetHeight
+  }
+  const scaleX = width * (ratio.value - 1) / 2
+  const scaleY = height * (ratio.value - 1) / 2
+  return {
+    transform: `scale(${ratio.value})`,
+    left: scaleX * (1 - 2 * minimapPercent.x) + 'px',
+    top: scaleY * (1 - 2 * minimapPercent.y) + 'px'
+  }
+})
+const imgStyle2 = computed(() => {
+  let width = 0
+  let height = 0
+  if (imgRef.value) {
+    width = imgRef.value.offsetWidth
+    height = imgRef.value.offsetHeight
+  }
+  const scaleX = width * (ratio.value - 1) / 2
+  const scaleY = height * (ratio.value - 1) / 2
+  let offsetLeft = 0
+  if (parentRef.value) {
+    offsetLeft = parentRef.value.offsetWidth * imgLayoutLeft.value / 100
+  }
+  return {
+    transform: `scale(${ratio.value})`,
+    left: scaleX * (1 - 2 * minimapPercent.x) - offsetLeft + 'px',
+    top: scaleY * (1 - 2 * minimapPercent.y) + 'px'
+  }
+})
+
 const init = () => {
   viewportWidth.value = viewportRef.value.getBoundingClientRect().width
   handleWidth = handleRef.value.getBoundingClientRect().width
@@ -87,6 +145,7 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .img {
+  position: absolute;
   width: 100%;
   height: 100%;
   object-fit: cover;

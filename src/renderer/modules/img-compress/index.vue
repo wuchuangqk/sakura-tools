@@ -39,9 +39,18 @@
       </aside>
       <section class="flex-1 overflow-hidden">
         <StartPage v-if="imgs.length === 0" @load="drop" />
-        <div class="h-full p-10">
-          <!-- <ImgCompare v-if="selected !== -1" :before="imgs[selected].path" :after="imgs[selected].compressedImg" /> -->
-           <ScaleCompare v-if="selected !== -1" :original="imgs[selected].path" :after="imgs[selected].compressedImg" />
+        <div class="h-full p-10 flex flex-col overflow-hidden">
+          <RadioGroup v-model:value="compareMode">
+            <RadioButton value="ScaleCompare">ScaleCompare</RadioButton>
+            <RadioButton value="SliderCompare">SliderCompare</RadioButton>
+          </RadioGroup>
+          <div class="flex-1 overflow-hidden">
+            <ScaleCompare v-if="selected !== -1 && compareMode === 'ScaleCompare'" :original="imgs[selected].path"
+              :after="imgs[selected].compressedImg" />
+            <SliderCompare v-if="selected !== -1 && compareMode === 'SliderCompare'" :before="imgs[selected].path"
+              :after="imgs[selected].compressedImg" />
+          </div>
+
         </div>
       </section>
     </main>
@@ -67,7 +76,7 @@
 </template>
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-// import ImgCompare from './components/ImgCompare.vue';
+import SliderCompare from './components/SliderCompare.vue';
 import ScaleCompare from './components/ScaleCompare.vue';
 import ImgCard from './components/ImgCard.vue';
 import StartPage from './components/StartPage.vue';
@@ -99,6 +108,7 @@ const modal = reactive({
   overwrite: false,
 })
 const tempDir = ref('')
+const compareMode = ref('ScaleCompare')
 
 const setPreview = (index: number) => {
   if (!imgs[index].compressed) return
@@ -119,11 +129,11 @@ const drop = (files: FileList) => {
     imgs.push(img)
   }
   if (extisNotSupport) {
-    message.error('仅支持jpg、png、webp格式的图片')
+    message.error('仅支持jpg格式的图片')
   }
 }
 const isSupport = (name: string) => {
-  return ['jpg', 'png', 'webp'].includes(getFileExtension(name))
+  return ['jpg'].includes(getFileExtension(name))
 }
 
 const clearWorkSpace = () => {

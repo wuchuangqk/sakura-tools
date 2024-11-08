@@ -12,6 +12,10 @@
           </Flex>
         </div>
       </div>
+      <div>
+        <Slider v-model:value="img.quality" :max="100" :min="30" :step="2" />
+        <Button @click="doCopress">重新压缩</Button>
+      </div>
       <div class="flex justify-between items-baseline text-gray-300 my-10 px-10">
         <!-- 压缩比 -->
         <span :class="[diff.better ? 'text-green-600' : 'text-red-600', 'text-lg']">{{ img.compressed ? diff.percent :
@@ -101,6 +105,9 @@ const saveAs = () => {
 }
 const remove = () => {
   call('action', 'remove')
+}
+const doCopress = () => {
+  props.img.compress()
 }
 
 onMounted(() => {
