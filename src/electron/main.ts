@@ -5,11 +5,13 @@ import { fileURLToPath } from 'node:url'
 import initIpcClient from './ipc/index'
 import { isDev } from './util'
 import compress from './ipc/compress'
+import logger from 'electron-log/renderer'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 compress.clearTempDir()
+logger.info('缓存图片已清空')
 
 // The built directory structure
 //

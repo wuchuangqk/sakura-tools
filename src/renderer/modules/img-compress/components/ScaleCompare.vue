@@ -1,12 +1,32 @@
+<template>
+  <div class="h-full relative flex flex-col">
+    <div class="flex items-center">
+      <div class="w-[150px] mr-6 px-10">
+        <Slider v-model:value="ratio" :max="5" :min="1" :step="1" />
+      </div>
+      <div>放大倍数：{{ ratio }}</div>
+    </div>
+    <div class="d1 flex-1">
+      <div class="d2">
+        <div class=" absolute left-4 top-4 px-8 py-4 bg-black/80 z-[1] shadow">原图</div>
+        <img ref="img" :src="compressInfo.file.path" alt="" class="img" :style="imgStyle">
+      </div>
+      <div class="d2">
+        <div class=" absolute left-4 top-4 px-8 py-4 bg-black/80 z-[1] shadow">压缩后({{ compressInfo.quality }}%)</div>
+        <img :src="compressInfo.compressedImgPath" alt="" class="img" :style="imgStyle">
+      </div>
+    </div>
+    <MiniMap :img="compressInfo.file.path" :ratio="ratio" @update="onUpdate" />
+  </div>
+</template>
+
 <script setup lang="ts">
-import { computed } from 'vue';
-import { reactive } from 'vue';
-import { ref } from 'vue'
+import { computed, reactive, ref } from 'vue';
 import MiniMap from './MiniMap.vue';
+import { ImgCompress } from '@/renderer/util';
 
 defineProps<{
-  original: string,
-  after: string
+  compressInfo: ImgCompress
 }>()
 
 const img = ref<HTMLImageElement>(null as unknown as HTMLImageElement)
@@ -37,28 +57,6 @@ const onUpdate = ({ x, y }: { x: number, y: number }) => {
   minimapPercent.y = y
 }
 </script>
-
-<template>
-  <div class="h-full relative flex flex-col">
-    <div class="flex items-center">
-      <div class="w-[150px] mr-6">
-        <Slider v-model:value="ratio" :max="5" :min="1" :step="1" />
-      </div>
-      <div>放大倍数：{{ ratio }}</div>
-    </div>
-    <div class="d1 flex-1">
-      <div class="d2">
-        <div class=" absolute left-4 top-4 px-8 py-4 bg-black/80 z-[1] shadow">原图</div>
-        <img ref="img" :src="original" alt="" class="img" :style="imgStyle">
-      </div>
-      <div class="d2">
-        <div class=" absolute left-4 top-4 px-8 py-4 bg-black/80 z-[1] shadow">压缩后</div>
-        <img :src="after" alt="" class="img" :style="imgStyle">
-      </div>
-    </div>
-    <MiniMap :img="original" :ratio="ratio" @update="onUpdate" />
-  </div>
-</template>
 
 <style scoped>
 .d1 {

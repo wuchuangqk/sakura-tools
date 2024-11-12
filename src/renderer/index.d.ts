@@ -1,3 +1,4 @@
+import type { WebUtils } from 'electron'
 export interface IIPC {
   ffmpeg: IFfmpeg
   os: IOS
@@ -7,5 +8,6 @@ declare global {
   interface Window {
     IPC: IIPC,
     invoke: <T>(channel: string, ...args: any) => Promise<T>
+    webUtils: WebUtils
   }
 }

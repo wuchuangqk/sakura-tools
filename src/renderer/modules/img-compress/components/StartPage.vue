@@ -10,10 +10,11 @@
 <script setup lang="ts">
 import appImg from '@/renderer/assets/app.ico'
 import { useVideoStore } from '@/renderer/store'
+import { MyFile } from '@/renderer/util';
 import { useFileDialog } from '@vueuse/core'
 
 const call = defineEmits<{
-  load: [files: FileList]
+  load: [files: MyFile[]]
 }>()
 
 const store = useVideoStore()
@@ -26,7 +27,11 @@ const { open, onChange } = useFileDialog({
 })
 onChange((files) => {
   if (files === null || files.length === 0) return
-  call('load', files)
+  const myFiles = []
+  for (let i = 0; i < files.length; i++) {
+    myFiles.push(new MyFile(files[i]))
+  }
+  call('load', myFiles)
 })
 
 </script>

@@ -1,37 +1,39 @@
 <template>
   <div class="h-full flex flex-col relative overflow-hidden">
     <div class="flex items-center">
-      <div class="w-[150px] mr-6">
+      <div class="w-[150px] mr-6 px-10">
         <Slider v-model:value="ratio" :max="5" :min="1" :step="1" />
       </div>
       <div>放大倍数：{{ ratio }}</div>
     </div>
     <div ref="viewportRef" class="flex-1 relative select-none overflow-hidden">
       <div class="w-full h-full relative">
-        <img v-if="before" ref="imgRef" :src="before" alt="" class="img" :style="imgStyle">
+        <img v-if="compressInfo.file.path" ref="imgRef" :src="compressInfo.file.path" alt="" class="img"
+          :style="imgStyle">
       </div>
       <div ref="parentRef" class=" absolute top-0 bottom-0 w-full h-full overflow-hidden"
         :style="{ left: imgLayoutLeft + '%' }">
-        <img v-if="after" :src="after" alt="" class="img absolute" :style="imgStyle2">
+        <img v-if="compressInfo.compressedImgPath" :src="compressInfo.compressedImgPath" alt="" class="img absolute"
+          :style="imgStyle2">
       </div>
       <div ref="handleRef" class="w-12 absolute top-0 bottom-0 cursor-e-resize" :style="{ left: handleLeftFmt }"
         @mousedown="onMouseDown">
         <div class="bg-white/80 w-2 h-full mx-auto handler"></div>
         <div class=" absolute tag -left-60">原图</div>
-        <div class=" absolute tag left-20">压缩后</div>
+        <div class=" absolute tag left-20">压缩后({{ compressInfo.quality }}%)</div>
       </div>
     </div>
-    <MiniMap :img="before" :ratio="ratio" @update="onUpdate" />
+    <MiniMap :img="compressInfo.file.path" :ratio="ratio" @update="onUpdate" />
   </div>
 </template>
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch, useTemplateRef } from 'vue'
 import { throttle } from 'lodash'
 import MiniMap from './MiniMap.vue';
+import { ImgCompress } from '@/renderer/util';
 
 const props = defineProps<{
-  before: string,
-  after: string
+  compressInfo: ImgCompress
 }>()
 
 const viewportRef = ref(null as unknown as HTMLElement)
@@ -133,7 +135,7 @@ const init = () => {
   handleWidth = handleRef.value.getBoundingClientRect().width
   handleLeft.value = viewportWidth.value / 2
 }
-watch(() => props.before, () => init())
+watch(() => props.compressInfo, () => init())
 onMounted(() => {
   init()
   window.addEventListener('resize', init)

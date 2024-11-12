@@ -8,7 +8,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import path from 'path'
 
-process.env.ELECTRON_OVERRIDE_DIST_PATH = 'C:\\Users\\玛露希尔\\AppData\\Local\\electron\\Cache\\electron-v31.4.0-win32-x64'
+process.env.ELECTRON_OVERRIDE_DIST_PATH = fileURLToPath(new URL('./.electron/electron-v33.2.0-win32-x64', import.meta.url))
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {

@@ -1,5 +1,5 @@
 import { onMounted, onUnmounted } from "vue"
-import { emitter, C } from '@/renderer/util'
+import { emitter, C, MyFile } from '@/renderer/util'
 
 export const useDrop = () => {
   // 拖拽上传
@@ -8,7 +8,11 @@ export const useDrop = () => {
     if (event.dataTransfer === null) return
     const { files } = event.dataTransfer
     if (files.length) {
-      emitter.emit(C.USER_DROP_FILE, files)
+      const myFiles = []
+      for (let i = 0; i < files.length; i++) {
+        myFiles.push(new MyFile(files[i]))
+      }
+      emitter.emit(C.USER_DROP_FILE, myFiles)
     }
   }
   // 阻止默认事件，使得元素能够接收 drop 事件

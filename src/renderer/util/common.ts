@@ -112,3 +112,13 @@ export const getFileExtension = (filePath: string): string => {
   const extension = filePath.substring(filePath.lastIndexOf('.') + 1).toLowerCase()
   return aliasMap[extension] || extension
 }
+
+/**
+ * 获取文件所在目录，从完整文件路径中去掉文件名
+ * @param path 完整路径
+ * @param name 文件名
+ * @returns 
+ */
+export const getDirname = (path: string, name: string) => {
+  return path.substring(0, path.lastIndexOf(name))
+}

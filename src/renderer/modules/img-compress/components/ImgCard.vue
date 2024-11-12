@@ -3,26 +3,26 @@
     <div class=" bg-[#313131] rounded-md img-card overflow-hidden border border-[var(--divider)] relative"
       :class="{ selected }" @click="call('click')">
       <div class="h-[140px] relative">
-        <img :src="img.path" alt="" class="w-full h-full object-cover">
+        <img :src="img.file.path" alt="" class="w-full h-full object-cover">
         <div
           class="flex justify-between items-end absolute bottom-0 left-0 right-0 h-40 px-10 pb-6 img-meta fs-12 text-gray-300">
-          <div>{{ img.extension.toUpperCase() }}</div>
+          <div>{{ img.file.ext.toUpperCase() }}</div>
           <Flex class="fs-12" align="flex-end" gap="4">
             <Icon name="time" size="14" :border="false" /><span>{{ img.compressed ? img.compresTime : '--' }}秒</span>
           </Flex>
         </div>
       </div>
-      <div>
-        <Slider v-model:value="img.quality" :max="100" :min="30" :step="2" />
-        <Button @click="doCopress">重新压缩</Button>
+      <div class="flex px-10 items-center">
+        <Slider v-model:value="img.quality" :max="100" :min="30" :step="2" class="flex-1" @change="onQualityChange" />
+        <span class=" ml-4">{{ img.quality }}</span>
       </div>
-      <div class="flex justify-between items-baseline text-gray-300 my-10 px-10">
+      <div class="flex justify-between items-baseline text-gray-300 px-10 pb-10">
         <!-- 压缩比 -->
-        <span :class="[diff.better ? 'text-green-600' : 'text-red-600', 'text-lg']">{{ img.compressed ? diff.percent :
-          '--' }}</span>
+        <span :class="[diff.better ? 'text-green-600' : 'text-red-600', 'text-lg']">
+          {{ img.compressed ? diff.percent : '--' }}</span>
         <span class="fs-13">
           <span>{{ img.compressed ? compressedSize : '--' }}</span>
-          <span class=" text-gray-400">/{{ originSize }}</span>
+          <span class=" text-gray-400">/{{ img.file.sizeFmt }}</span>
         </span>
       </div>
       <div class="flex border-t border-[var(--divider2)] h-32">
@@ -62,6 +62,7 @@ import { ref, h, onMounted, computed } from 'vue'
 import { LoadingOutlined } from '@ant-design/icons-vue';
 import { fmtFileSize } from '@/renderer/util'
 import { ImgCompress } from '@/renderer/util/ImgCompress';
+import { debounce } from 'lodash'
 
 const props = defineProps<{
   img: ImgCompress,
@@ -77,14 +78,11 @@ const indicator = h(LoadingOutlined, {
   spin: true,
 });
 
-const originSize = computed(() => {
-  return fmtFileSize(props.img.originSize)
-})
 const compressedSize = computed(() => {
   return fmtFileSize(props.img.compressedSize)
 })
 const diff = computed(() => {
-  const originSize = props.img.originSize
+  const originSize = props.img.file.size
   const compressedSize = props.img.compressedSize
   const size = originSize - compressedSize
   let percent = 0
@@ -106,12 +104,12 @@ const saveAs = () => {
 const remove = () => {
   call('action', 'remove')
 }
-const doCopress = () => {
+
+const onQualityChange = debounce(() => {
   props.img.compress()
-}
+}, 1000)
 
 onMounted(() => {
-  props.img.setSize()
   props.img.compress()
 })
 </script>

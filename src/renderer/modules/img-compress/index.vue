@@ -33,7 +33,7 @@
         </header>
         <div class="flex justify-center py-6 fs-12 text-gray-500">拖拽图片到这里继续添加</div>
         <div class="grid grid-cols-2 gap-14 overflow-auto px-10">
-          <ImgCard v-for="(img, index) in imgs" :key="img.path" :img="img" :selected="index === selected"
+          <ImgCard v-for="(img, index) in imgs" :key="img.file.path" :img="img" :selected="index === selected"
             @click="setPreview(index)" @action="(type) => onAction(index, type)" />
         </div>
       </aside>
@@ -45,10 +45,8 @@
             <RadioButton value="SliderCompare">SliderCompare</RadioButton>
           </RadioGroup>
           <div class="flex-1 overflow-hidden">
-            <ScaleCompare v-if="selected !== -1 && compareMode === 'ScaleCompare'" :original="imgs[selected].path"
-              :after="imgs[selected].compressedImg" />
-            <SliderCompare v-if="selected !== -1 && compareMode === 'SliderCompare'" :before="imgs[selected].path"
-              :after="imgs[selected].compressedImg" />
+            <ScaleCompare v-if="selected !== -1 && compareMode === 'ScaleCompare'" :compress-info="imgs[selected]" />
+            <SliderCompare v-if="selected !== -1 && compareMode === 'SliderCompare'" :compress-info="imgs[selected]" />
           </div>
 
         </div>
@@ -63,6 +61,7 @@
           <Icon name="openFold" size="16" @click="openTempDir" />
         </Tooltip>
         <span>缓存目录：{{ tempDir }}</span>
+        <div class=" ml-10">缓存图片：{{ meta.tempImgCount }}</div>
       </div>
       <Flex gap="10">
         <span>{{ appMeta.name }}</span>
@@ -80,16 +79,19 @@ import SliderCompare from './components/SliderCompare.vue';
 import ScaleCompare from './components/ScaleCompare.vue';
 import ImgCard from './components/ImgCard.vue';
 import StartPage from './components/StartPage.vue';
-import { emitter, C, ImgCompress, getFileExtension } from '@/renderer/util'
+import { emitter, C, ImgCompress, getFileExtension, MyFile } from '@/renderer/util'
 import { useModule, usePromise } from '@/renderer/composables'
 import { SaveType } from '../../../common/types'
 import { message } from 'ant-design-vue';
-import { useVideoStore } from '@/renderer/store'
+import { useVideoStore, useImgStore } from '@/renderer/store'
 import { useFileDialog } from '@vueuse/core'
+import { storeToRefs } from 'pinia'
 
 const { invoke } = window
 
 const store = useVideoStore()
+const imgStore = useImgStore()
+const { meta } = storeToRefs(imgStore)
 store.init()
 const appMeta = store.appMeta
 
@@ -115,25 +117,24 @@ const setPreview = (index: number) => {
   selected.value = index
 }
 // 拖拽上传
-const drop = (files: FileList) => {
-  // console.log('isModuleActive', isModuleActive.value, C.IMG_MODULE);
+const drop = (files: MyFile[]) => {
   if (!isModuleActive.value) return
-  let extisNotSupport = false
   for (let i = 0; i < files.length; i++) {
-    const { name, path } = files[i]
-    if (!isSupport(name)) {
-      extisNotSupport = true
+    console.log('拖拽添加图片', files[i].name, files[i].path);
+    if (!isSupport(files[i].ext)) {
+      message.error('仅支持jpg格式的图片')
       continue
     }
-    const img = new ImgCompress(path)
+    if (imgs.findIndex(img => img.file.path === files[i].path) !== -1) {
+      message.error('不能添加相同的图片')
+      continue
+    }
+    const img = new ImgCompress(files[i])
     imgs.push(img)
   }
-  if (extisNotSupport) {
-    message.error('仅支持jpg格式的图片')
-  }
 }
-const isSupport = (name: string) => {
-  return ['jpg'].includes(getFileExtension(name))
+const isSupport = (ext: string) => {
+  return ['jpg'].includes(ext)
 }
 
 const clearWorkSpace = () => {
@@ -156,9 +157,9 @@ const dispatchSave = async (imgs: ImgCompress[], saveType: SaveType) => {
     const imgList = imgs
       .filter(img => img.compressed)
       .map(img => ({
-        originPath: img.path,
-        compressedPath: img.compressedImg,
-        ext: img.extension
+        originPath: img.file.path,
+        compressedPath: img.compressedImgPath,
+        ext: img.file.ext
       }))
     if (imgList.length === 0) return
     loading.value = true
@@ -173,6 +174,7 @@ const dispatchSave = async (imgs: ImgCompress[], saveType: SaveType) => {
 }
 
 const onAction = async (imgIndex: number, type: string) => {
+  const { file, compressedImgPath } = imgs[imgIndex]
   switch (type) {
     case 'save':
       await future(() => modal.overwrite = true)
@@ -180,6 +182,16 @@ const onAction = async (imgIndex: number, type: string) => {
       dispatchSave([imgs[imgIndex]], SaveType.OVERWRITE)
       break;
     case 'saveAs':
+      await invoke('compress:save', {
+        imgList: [{
+          compressedPath: compressedImgPath,
+          originPath: file.path,
+          name: file.name,
+          dir: file.dir,
+          ext: file.ext,
+        }], saveType: SaveType.SAVE_AS
+      })
+      message.success('另存为成功')
       break
     case 'remove':
       if (imgs.length === 1) {
@@ -200,7 +212,11 @@ const completeCount = computed(() => {
 
 onChange((files) => {
   if (files === null || files.length === 0) return
-  drop(files)
+  const myFiles = []
+  for (let i = 0; i < files.length; i++) {
+    myFiles.push(new MyFile(files[i]))
+  }
+  drop(myFiles)
 })
 
 watch(imgs, () => {
