@@ -29,7 +29,7 @@ const theme = {
     wireframe: true,
   }
 }
-useDrop()
+// useDrop()
 onMounted(() => {
   document.body.classList.toggle(appStore.theme)
 })

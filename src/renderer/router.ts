@@ -4,7 +4,7 @@ import type { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/img'
+    redirect: '/compare'
   },
   {
     path: '/video',
@@ -15,6 +15,11 @@ const routes: RouteRecordRaw[] = [
     path: '/img',
     name: 'img',
     component: () => import('@/renderer/modules/img-compress/index.vue')
+  },
+  {
+    path: '/compare',
+    name: 'img-compare',
+    component: () => import('@/renderer/modules/img-compress/compare.vue')
   }
 ]
 
