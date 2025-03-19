@@ -11,3 +11,5 @@ pnpm add electron --ignore-scripts
 ```
 process.env.ELECTRON_OVERRIDE_DIST_PATH = fileURLToPath(new URL('./.electron/electron-v33.2.0-win32-x64', import.meta.url))
 ```
+
+4. electron-builder 打包过程中会下载electron，手动将electron-v33.2.0-win32-x64.zip放到 AppData/Local/electron/Cache可以跳过下载
